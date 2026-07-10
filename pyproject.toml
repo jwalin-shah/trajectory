@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "letta-trajectory"
+version = "0.1.0"
+description = "Normalize native agent transcripts into a shared trajectory format."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Letta" }]
+keywords = ["agents", "transcripts", "normalization", "training"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Repository = "https://github.com/letta-ai/trajectory"
+
+[tool.setuptools]
+package-dir = { "" = "python/src" }
+
+[tool.setuptools.package-data]
+trajectory = ["py.typed", "_vendor/*.mjs"]
