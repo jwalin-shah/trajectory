@@ -19,6 +19,8 @@ FIXTURES = (
     ("codex", "codex/cleanup", "input.jsonl"),
     ("letta", "letta/tool-call", "input.json"),
     ("letta", "letta/cleanup", "input.json"),
+    ("letta", "letta/local-v3", "input.jsonl"),
+    ("letta", "letta/local-legacy", "input.jsonl"),
     ("openhands", "openhands/tool-calls", "input.json"),
     ("openhands", "openhands/cleanup", "input.json"),
 )

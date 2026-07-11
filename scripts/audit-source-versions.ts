@@ -141,7 +141,7 @@ async function collectFiles(inputs: string[]): Promise<string[]> {
 
     const patterns =
       sourceArg === "letta"
-        ? ["**/transcript.json", "**/transcript.jsonl"]
+        ? ["**/messages.jsonl"]
         : ["**/*.jsonl"];
     for (const pattern of patterns) {
       const glob = new Bun.Glob(pattern);
@@ -211,8 +211,12 @@ function sourceVersion(
       if (typeof payload.cli_version === "string") {
         candidates.add(payload.cli_version);
       }
-    } else if (source === "letta" && typeof record.version === "string") {
-      candidates.add(record.version);
+    } else if (
+      source === "letta" &&
+      record.type === "session" &&
+      (typeof record.version === "string" || typeof record.version === "number")
+    ) {
+      candidates.add(String(record.version));
     }
   }
   if (candidates.size === 0) return "unknown";
@@ -250,13 +254,19 @@ function codexSignature(record: Record<string, unknown>): string {
 }
 
 function lettaSignature(record: Record<string, unknown>): string {
+  const message =
+    record.type === "message" && isObject(record.message)
+      ? record.message
+      : record;
   const parts = [
-    `message_type:${tag(record.message_type)}`,
-    `role:${tag(record.role)}`,
-    `keys:${keys(record)}`,
+    `entry_type:${tag(record.type)}`,
+    `entry_keys:${keys(record)}`,
+    `message_type:${tag(message.message_type)}`,
+    `role:${tag(message.role)}`,
+    `message_keys:${keys(message)}`,
   ];
-  if ("content" in record) parts.push(`content:${contentShape(record.content)}`);
-  if (Array.isArray(record.tool_calls)) parts.push("tool_calls:array");
+  if ("content" in message) parts.push(`content:${contentShape(message.content)}`);
+  if (Array.isArray(message.tool_calls)) parts.push("tool_calls:array");
   return parts.join("|");
 }
 

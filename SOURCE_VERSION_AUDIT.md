@@ -14,6 +14,7 @@ record and content-block shapes, and optionally runs the current normalizer.
 ```sh
 bun run audit:versions claude-code --normalize ~/.claude/projects
 bun run audit:versions codex --normalize ~/.codex/sessions
+bun run audit:versions letta --normalize ~/.letta/lc-local-backend/conversations
 ```
 
 The output contains counts and structural signatures only. A signature includes
@@ -87,9 +88,9 @@ include patch/command completion events, thread rollback/settings events, MCP
 completion events, and top-level `world_state` records.
 
 One decoder gap was found: `0.140.0` contains a paired
-`tool_search_call`/`tool_search_output`. The current Codex adapter silently
-drops both. This is a new semantic tool event, not merely metadata, and should
-be added to the structural decoder with a sanitized fixture.
+`tool_search_call`/`tool_search_output`. This is a semantic tool event, not
+merely metadata. The adapter now preserves it as a `tool_search` call and linked
+result, covered by a sanitized fixture.
 
 Normalization outcome:
 
@@ -97,30 +98,45 @@ Normalization outcome:
 - Four incomplete files lacked an assistant record.
 
 Conclusion: the observed Codex versions also do not require whole-version
-decoders. Add the missing tool-search shape to the existing decoder and keep
-dispatch structural unless an incompatible representation is found.
+decoders. Keep dispatch structural unless an incompatible representation is
+found.
 
 ## Letta
 
-The on-device `~/.letta/transcripts` tree is not valid native-version evidence
-for the current Letta adapter:
+Only actual conversation transcripts are in scope. The
+`~/.letta/transcripts` tree is produced for reflection and was excluded from
+the corrected audit. The local conversation store is:
 
-- 39,666 legacy `transcript.json` files contain role-based reflection/context
-  records and no producer version.
-- 1,923 nested `transcript.jsonl` files are reflection-trigger artifacts and
-  likewise contain no producer version.
-- None of these files contain the native `message_type` objects consumed by the
-  Letta adapter.
+```text
+~/.letta/lc-local-backend/conversations/*/messages.jsonl
+```
 
-These artifacts were fingerprinted to confirm their provenance mismatch, then
-excluded from compatibility conclusions. They must not be labeled with the
-currently installed Letta Code version because they may predate it.
+Coverage:
 
-The previously checked live Letta message response confirms the current
-`message_type` representation, but the messages themselves do not embed a
-Letta server or client version. Establishing historical Letta compatibility
-therefore requires controlled runs against pinned Letta releases or a corpus
-whose collection metadata records the producer version.
+- 24 conversation manifests, of which 11 had a `messages.jsonl` file.
+- Eight files use `pi-session-entry-jsonl`. Their session header embeds local
+  transcript version `3`; together they contain 84 records.
+- Three files use the legacy headerless `pi-ai-message-jsonl` format. Only one
+  legacy message remained on this device, so historical coverage is limited.
+- Seven complete version 3 conversations normalized successfully. One
+  incomplete conversation lacked an assistant record.
+
+Version 3 contains a `session` header followed by `message` entries. Messages
+use `user`, `assistant`, and `toolResult` roles. Assistant content contains
+`text`, `thinking`, and `toolCall` blocks; tool calls use structured
+`arguments`, and results link through `toolCallId`. `compaction` entries contain
+derived context summaries and are deliberately excluded from normalized output
+because the original message entries remain in the append-only transcript.
+
+The adapter now accepts both observed local formats. It also continues to
+accept cloud/API message arrays with native `message_type` objects. Those API
+objects do not embed a Letta server or client version, so their source version
+must come from collection metadata or a caller-supplied value.
+
+Conclusion: Letta already demonstrates the intended routing model. Headerless
+legacy rows are detected structurally; local version 3 is selected from the
+session header; unknown explicit local versions fail rather than being guessed.
+The reflection transcript tree is never used as decoder evidence or input.
 
 ## Decisions supported by this audit
 
@@ -142,7 +158,6 @@ whose collection metadata records the producer version.
 
 - Define provenance for the rare mixed-version Claude session. Decoding can use
   each record's embedded version even if normalized metadata remains singular.
-- Decide whether Letta's source version denotes the server release, client/CLI
-  release, or a separately versioned transcript export contract. The server
-  controls the observed `message_type` response shape, so server version is the
-  strongest default when available.
+- Decide how to represent source versions across producer release versions
+  (Claude/Codex) and an explicit transcript-format version (Letta local v3).
+  Decoder selection should prefer an embedded format version when one exists.

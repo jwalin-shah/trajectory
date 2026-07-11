@@ -338,10 +338,21 @@ var codexAdapter = {
         });
         continue;
       }
-      if (payloadType === "function_call_output" || payloadType === "custom_tool_call_output") {
+      if (payloadType === "tool_search_call") {
+        events.push({
+          type: "tool_call",
+          name: "tool_search",
+          args: typeof payload.arguments === "string" && payload.arguments ? payload.arguments : jsonString(payload.arguments),
+          inputLine: line,
+          ...typeof payload.call_id === "string" ? { id: payload.call_id } : {},
+          ...timestamp ? { timestamp } : {}
+        });
+        continue;
+      }
+      if (payloadType === "function_call_output" || payloadType === "custom_tool_call_output" || payloadType === "tool_search_output") {
         events.push({
           type: "tool_result",
-          content: outputText(payload.output),
+          content: payloadType === "tool_search_output" ? jsonString(payload.tools ?? []) : outputText(payload.output),
           inputLine: line,
           ...typeof payload.call_id === "string" ? { callId: payload.call_id } : {},
           ...timestamp ? { timestamp } : {}
@@ -387,7 +398,21 @@ var lettaAdapter = {
   source: "letta",
   decode(transcript) {
     const events = [];
-    for (const message of parseMessages(transcript)) {
+    const parsed = parseTranscript(transcript);
+    if (parsed.format === "local") {
+      for (const entry of parsed.messages) {
+        decodeLocalMessage(entry.message, entry.timestamp, events);
+      }
+      return {
+        events,
+        context: {
+          source: "letta",
+          ...parsed.createdAt ? { createdAt: parsed.createdAt } : {}
+        },
+        diagnostics: []
+      };
+    }
+    for (const message of parsed.messages) {
       const timestamp = parseTimestamp(message.date);
       if (message.message_type === "user_message" || message.message_type === "assistant_message") {
         const content = blocksText(message.content);
@@ -445,21 +470,171 @@ var lettaAdapter = {
     };
   }
 };
-function parseMessages(transcript) {
+function parseTranscript(transcript) {
   let parsed;
   try {
     parsed = JSON.parse(transcript);
   } catch {
-    throw invalidLettaTranscript();
+    return parseLocalJsonLines(transcript);
+  }
+  if (isObject(parsed)) {
+    if (parsed.type === "session")
+      return parseLocalJsonLines(transcript);
+    if (typeof parsed.role === "string") {
+      const timestamp = messageTimestamp(parsed);
+      return {
+        format: "local",
+        messages: [
+          {
+            message: parsed,
+            ...timestamp ? { timestamp } : {}
+          }
+        ]
+      };
+    }
   }
   if (!Array.isArray(parsed) || !parsed.every(isObject)) {
     throw invalidLettaTranscript();
   }
   const messages = parsed;
   if (!messages.every((message) => typeof message.seq_id === "number")) {
-    return messages;
+    return { format: "api", messages };
   }
-  return messages.map((message, index) => ({ message, index })).sort((left, right) => left.message.seq_id - right.message.seq_id || left.index - right.index).map(({ message }) => message);
+  return {
+    format: "api",
+    messages: messages.map((message, index) => ({ message, index })).sort((left, right) => left.message.seq_id - right.message.seq_id || left.index - right.index).map(({ message }) => message)
+  };
+}
+function parseLocalJsonLines(transcript) {
+  const rows = [];
+  for (const raw of transcript.split(`
+`)) {
+    if (!raw.trim())
+      continue;
+    let row;
+    try {
+      row = JSON.parse(raw);
+    } catch {
+      throw invalidLettaTranscript();
+    }
+    if (!isObject(row))
+      throw invalidLettaTranscript();
+    rows.push(row);
+  }
+  if (rows.length === 0)
+    throw invalidLettaTranscript();
+  const session = rows.find((row) => row.type === "session");
+  if (session) {
+    if (session.version !== 3) {
+      throw new NormalizationError("invalid_input", `Unsupported Letta local transcript version ${JSON.stringify(session.version)}; supported version: 3.`);
+    }
+    const createdAt = parseTimestamp(session.timestamp);
+    return {
+      format: "local",
+      messages: rows.flatMap((row) => {
+        if (row.type !== "message" || !isObject(row.message))
+          return [];
+        const timestamp = parseTimestamp(row.timestamp);
+        return [
+          {
+            message: row.message,
+            ...timestamp ? { timestamp } : {}
+          }
+        ];
+      }),
+      ...createdAt ? { createdAt } : {}
+    };
+  }
+  if (!rows.every((row) => typeof row.role === "string")) {
+    throw invalidLettaTranscript();
+  }
+  return {
+    format: "local",
+    messages: rows.map((message) => {
+      const timestamp = messageTimestamp(message);
+      return {
+        message,
+        ...timestamp ? { timestamp } : {}
+      };
+    })
+  };
+}
+function decodeLocalMessage(message, entryTimestamp, events) {
+  const timestamp = entryTimestamp ?? messageTimestamp(message);
+  const model = typeof message.model === "string" ? message.model : undefined;
+  if (message.role === "user") {
+    const content = blocksText(message.content);
+    if (content) {
+      events.push({
+        type: "message",
+        role: "user",
+        content,
+        ...timestamp ? { timestamp } : {}
+      });
+    }
+    return;
+  }
+  if (message.role === "assistant") {
+    if (typeof message.content === "string") {
+      if (message.content) {
+        events.push({
+          type: "message",
+          role: "assistant",
+          content: message.content,
+          ...timestamp ? { timestamp } : {},
+          ...model ? { model } : {}
+        });
+      }
+      return;
+    }
+    for (const part of Array.isArray(message.content) ? message.content : []) {
+      if (!isObject(part))
+        continue;
+      if (part.type === "thinking" && typeof part.thinking === "string") {
+        events.push({
+          type: "reasoning",
+          content: part.thinking,
+          ...timestamp ? { timestamp } : {},
+          ...model ? { model } : {}
+        });
+      } else if (part.type === "text" && typeof part.text === "string") {
+        events.push({
+          type: "message",
+          role: "assistant",
+          content: part.text,
+          ...timestamp ? { timestamp } : {},
+          ...model ? { model } : {}
+        });
+      } else if (part.type === "toolCall") {
+        events.push({
+          type: "tool_call",
+          args: toolArguments(part.arguments),
+          ...typeof part.id === "string" && part.id ? { id: part.id } : {},
+          ...typeof part.name === "string" && part.name ? { name: part.name } : {},
+          ...timestamp ? { timestamp } : {},
+          ...model ? { model } : {}
+        });
+      }
+    }
+    return;
+  }
+  if (message.role === "toolResult" || message.role === "tool") {
+    let content = blocksText(message.content);
+    if (message.isError === true && !/^error/i.test(content)) {
+      content = `Error: ${content}`;
+    }
+    const callId = typeof message.toolCallId === "string" ? message.toolCallId : typeof message.tool_call_id === "string" ? message.tool_call_id : undefined;
+    events.push({
+      type: "tool_result",
+      content,
+      ...callId ? { callId } : {},
+      ...timestamp ? { timestamp } : {}
+    });
+  }
+}
+function messageTimestamp(message) {
+  const metadata = isObject(message.metadata) ? message.metadata : {};
+  return parseTimestamp(metadata.created_at) ?? parseTimestamp(message.date) ?? parseTimestamp(message.timestamp);
 }
 function toolArguments(value) {
   if (typeof value === "string" && value)
@@ -498,7 +673,7 @@ function uniqueByCallId(values) {
   });
 }
 function invalidLettaTranscript() {
-  return new NormalizationError("invalid_input", "Letta transcript must be a flat JSON array of native Letta messages.");
+  return new NormalizationError("invalid_input", "Letta transcript must be a native message array or local conversation JSONL.");
 }
 
 // src/adapters/openhands.ts

@@ -105,16 +105,21 @@ and is empty when the transcript required no recoverable cleanup.
 | --- | --- | --- |
 | `claude-code` | Native Claude Code JSONL | `claude-code` |
 | `codex` | Native Codex rollout JSONL | `codex` |
-| `letta` | Native Letta transcript JSON | `letta` |
+| `letta` | Cloud/API message array or local conversation JSONL (legacy and v3) | `letta` |
 | `openhands` | JSON event array or an events-API `{ "items": [...] }` envelope | `openhands` |
 
 Letta messages use native `message_type` values such as `user_message`,
 `reasoning_message`, `assistant_message`, `tool_call_message`,
 `approval_request_message`, and `tool_return_message`. The adapter orders a
 complete response by `seq_id`, handles singular and batched tool fields, and
-ignores system and approval-control records. OpenHands inputs are serialized
-exports; when a native store uses individual event files, assembling the event
-array remains the caller's responsibility.
+ignores system and approval-control records. It also accepts Letta's actual
+local conversation files from `lc-local-backend/conversations/*/messages.jsonl`:
+legacy headerless message rows and version 3 session-entry JSONL. Compaction
+entries are excluded because they summarize existing conversation context.
+The separate `~/.letta/transcripts` tree contains reflection artifacts and is
+not a supported native input. OpenHands inputs are serialized exports; when a
+native store uses individual event files, assembling the event array remains
+the caller's responsibility.
 
 ## Normalized records
 
