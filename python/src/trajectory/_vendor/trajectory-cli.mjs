@@ -1667,24 +1667,18 @@ function isMessageData(value) {
     return false;
   }
   if (value.role === "human")
-    return isHumanData(value);
+    return true;
   if (value.role === "ai")
     return isAIData(value);
   if (value.role === "tool")
-    return isToolData(value);
+    return typeof value.toolCallId === "string";
   return false;
 }
-function isHumanData(value) {
-  return value.role === "human";
-}
 function isAIData(value) {
-  return value.role === "ai" && Array.isArray(value.reasoning) && value.reasoning.every((item) => typeof item === "string") && Array.isArray(value.toolCalls) && value.toolCalls.every(isToolCall) && (value.model === undefined || typeof value.model === "string");
+  return Array.isArray(value.reasoning) && value.reasoning.every((item) => typeof item === "string") && Array.isArray(value.toolCalls) && value.toolCalls.every(isToolCall) && (value.model === undefined || typeof value.model === "string");
 }
 function isToolCall(value) {
   return isObject3(value) && "args" in value && (value.id === undefined || typeof value.id === "string") && (value.name === undefined || typeof value.name === "string");
-}
-function isToolData(value) {
-  return value.role === "tool" && typeof value.toolCallId === "string";
 }
 
 // src/index.ts

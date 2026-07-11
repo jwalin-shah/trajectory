@@ -247,19 +247,14 @@ function isMessageData(value: unknown): value is DeepAgentsMessageData {
   if (value.timestamp !== undefined && typeof value.timestamp !== "string") {
     return false;
   }
-  if (value.role === "human") return isHumanData(value);
+  if (value.role === "human") return true;
   if (value.role === "ai") return isAIData(value);
-  if (value.role === "tool") return isToolData(value);
+  if (value.role === "tool") return typeof value.toolCallId === "string";
   return false;
-}
-
-function isHumanData(value: Record<string, unknown>): boolean {
-  return value.role === "human";
 }
 
 function isAIData(value: Record<string, unknown>): boolean {
   return (
-    value.role === "ai" &&
     Array.isArray(value.reasoning) &&
     value.reasoning.every((item) => typeof item === "string") &&
     Array.isArray(value.toolCalls) &&
@@ -275,8 +270,4 @@ function isToolCall(value: unknown): value is DeepAgentsToolCall {
     (value.id === undefined || typeof value.id === "string") &&
     (value.name === undefined || typeof value.name === "string")
   );
-}
-
-function isToolData(value: Record<string, unknown>): boolean {
-  return value.role === "tool" && typeof value.toolCallId === "string";
 }
