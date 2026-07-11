@@ -204,6 +204,8 @@ PYTHONPATH=python/src python3 -m unittest discover -s python/tests -v
 
 See [`PARITY.md`](PARITY.md) for compatibility checks performed against real
 transcript corpora and production source adapters.
+See [`SOURCE_VERSION_AUDIT.md`](SOURCE_VERSION_AUDIT.md) for the privacy-safe
+source-version inventory, observed format families, and current decoder gaps.
 
 ## License
 

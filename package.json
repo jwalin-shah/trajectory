@@ -26,11 +26,13 @@
     "schema",
     "prompts",
     "README.md",
-    "PARITY.md"
+    "PARITY.md",
+    "SOURCE_VERSION_AUDIT.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "build:python-cli": "bun build ./src/python-cli.ts --target=node --format=esm --outfile=python/src/trajectory/_vendor/trajectory-cli.mjs",
+    "audit:versions": "bun scripts/audit-source-versions.ts",
     "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json",
     "test": "bun test",
