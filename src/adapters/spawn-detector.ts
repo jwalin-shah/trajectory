@@ -81,7 +81,7 @@ export function detectSpawn(
   // Strategy 3: No spawn proof found
   return {
     spawned: false,
-    proofType: undefined,
+    proofType: "none",
   };
 }
 
