@@ -1,6 +1,21 @@
 import type { NormalizeResult } from "../types.js";
 import { detectSpawn, getAdapterConfig, type SpawnInfo } from "./spawn-detector.js";
 
+/**
+ * Map source/trajectory names to canonical adapter names.
+ */
+function mapSourceToAdapter(source: string): string {
+  const map: Record<string, string> = {
+    "claude-code": "ct",
+    "claude-code-ca": "ca",
+    pi: "pi",
+    codex: "codex",
+    cursor: "cursor",
+    agy: "agy",
+  };
+  return map[source] || source;
+}
+
 export interface EnrichedRecord extends NormalizeResult {
   enrichment: {
     adapter: string;
@@ -26,12 +41,15 @@ export function enrichTranscript(
   sessionId?: string,
   transcriptPath?: string
 ): EnrichedRecord {
+  // Normalize adapter name: map source to canonical adapter name
+  const adapterName = mapSourceToAdapter(adapter);
+
   // Get adapter config (provider + default model)
-  const config = getAdapterConfig(adapter);
+  const config = getAdapterConfig(adapterName);
 
   // Detect spawn status
   const spawnInfo: SpawnInfo = sessionId
-    ? detectSpawn(sessionId, adapter, transcriptPath)
+    ? detectSpawn(sessionId, adapterName, transcriptPath)
     : { spawned: false, proofType: "none" };
 
   // Try to extract model from transcript if not using default
@@ -47,7 +65,7 @@ export function enrichTranscript(
   return {
     ...normalized,
     enrichment: {
-      adapter,
+      adapter: adapterName,
       provider: config.provider,
       ...(model ? { model } : {}),
       spawned: spawnInfo.spawned,
