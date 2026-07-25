@@ -172,6 +172,14 @@ export { DEFAULT_NORMALIZATION_BOUNDS } from "./bounds.js";
 export { DEFAULT_NORMALIZATION_FILTERS } from "./filters.js";
 export { validateTranscript } from "./validate.js";
 export {
+  verifyNormalized,
+  verifyEnriched,
+  verifyFullPipeline,
+  formatVerificationReport,
+  type VerificationResult,
+  type CheckResult,
+} from "./verify.js";
+export {
   NormalizationError,
   type AssistantMessageRecord,
   type AssistantToolCallRecord,
