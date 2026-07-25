@@ -5,6 +5,8 @@ import { lettaCodeAdapter } from "./adapters/letta-code/index.js";
 import { openClawAdapter } from "./adapters/openclaw/index.js";
 import { openHandsAdapter } from "./adapters/openhands/index.js";
 import { piAdapter } from "./adapters/pi/index.js";
+import { cursorAdapter } from "./adapters/cursor/index.js";
+import { agyAdapter } from "./adapters/agy/index.js";
 import type { ResolvedNormalizationBounds } from "./bounds.js";
 import { resolveBounds } from "./bounds.js";
 import type { ResolvedNormalizationFilters } from "./filters.js";
@@ -31,6 +33,8 @@ const ADAPTERS: Record<TranscriptTrajectorySource, SourceAdapter> = {
   openclaw: openClawAdapter,
   openhands: openHandsAdapter,
   pi: piAdapter,
+  cursor: cursorAdapter,
+  agy: agyAdapter,
 };
 
 function decodeTranscript(input: NormalizeInput): {

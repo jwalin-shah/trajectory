@@ -8,7 +8,9 @@ export type TrajectorySource =
   | "letta-code"
   | "openclaw"
   | "openhands"
-  | "pi";
+  | "pi"
+  | "cursor"
+  | "agy";
 
 export type TranscriptTrajectorySource = TrajectorySource;
 
