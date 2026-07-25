@@ -1,4 +1,5 @@
 import { claudeCodeAdapter } from "./adapters/claude-code/index.js";
+import { claudeCodeCaAdapter } from "./adapters/claude-code-ca/index.js";
 import { codexAdapter } from "./adapters/codex/index.js";
 import { hermesAdapter } from "./adapters/hermes/index.js";
 import { lettaCodeAdapter } from "./adapters/letta-code/index.js";
@@ -27,6 +28,7 @@ import { NormalizationError } from "./types.js";
 
 const ADAPTERS: Record<TranscriptTrajectorySource, SourceAdapter> = {
   "claude-code": claudeCodeAdapter,
+  "claude-code-ca": claudeCodeCaAdapter,
   codex: codexAdapter,
   hermes: hermesAdapter,
   "letta-code": lettaCodeAdapter,
@@ -72,6 +74,7 @@ export function normalizeTranscript(input: NormalizeInput): NormalizeResult {
   return normalizeDecodedSession(decoded, bounds, {
     partial: isPartialTranscript(input),
     filters,
+    source: input.source,
   });
 }
 
@@ -92,6 +95,7 @@ export function normalizeToCanonical(input: NormalizeInput): CanonicalResult {
   const internal = normalizeDecodedSessionInternal(decoded, bounds, {
     partial,
     filters,
+    source: input.source,
   });
   const groupId = resolveGroupId(
     input.source,

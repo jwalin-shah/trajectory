@@ -49,12 +49,12 @@ export function enrichTranscript(
     enrichment: {
       adapter,
       provider: config.provider,
-      model: model || undefined,
+      ...(model ? { model } : {}),
       spawned: spawnInfo.spawned,
-      ticketId: spawnInfo.ticketId || undefined,
-      manifestSessionId: spawnInfo.manifestSessionId || undefined,
-      worktreePath: spawnInfo.worktreePath || undefined,
-      spawnProofType: spawnInfo.proofType || undefined,
+      ...(spawnInfo.ticketId ? { ticketId: spawnInfo.ticketId } : {}),
+      ...(spawnInfo.manifestSessionId ? { manifestSessionId: spawnInfo.manifestSessionId } : {}),
+      ...(spawnInfo.worktreePath ? { worktreePath: spawnInfo.worktreePath } : {}),
+      ...(spawnInfo.proofType ? { spawnProofType: spawnInfo.proofType } : {}),
     },
   };
 }

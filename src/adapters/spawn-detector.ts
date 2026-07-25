@@ -55,7 +55,7 @@ export function detectSpawn(
 
             return {
               spawned: true,
-              ticketId,
+              ...(ticketId ? { ticketId } : {}),
               manifestSessionId: manifest.session_id,
               worktreePath: wtPath,
               proofType: "worktree-match",

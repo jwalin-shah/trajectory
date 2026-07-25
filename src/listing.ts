@@ -60,6 +60,7 @@ type SourceLister = (root: string | undefined) => Promise<TrajectoryListing[]>;
 
 const LISTERS: Record<AnyTrajectorySource, SourceLister> = {
   "claude-code": listClaudeCodeTrajectories,
+  "claude-code-ca": listClaudeCodeTrajectories, // CA uses same format/storage as CT
   codex: listCodexTrajectories,
   deepagents: listDeepAgentsTrajectories,
   hermes: listHermesTrajectories,

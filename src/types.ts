@@ -3,6 +3,7 @@ import type { ResolvedNormalizationFilters } from "./filters.js";
 
 export type TrajectorySource =
   | "claude-code"
+  | "claude-code-ca"
   | "codex"
   | "hermes"
   | "letta-code"

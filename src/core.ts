@@ -176,6 +176,8 @@ export interface NormalizeInternalOptions {
   partial?: boolean;
   /** Resolved output filters. Internal callers default to compatibility mode. */
   filters?: ResolvedNormalizationFilters;
+  /** Source adapter for conditional filtering (e.g., skip noise filter for CA) */
+  source?: string;
 }
 
 export function normalizeDecodedSessionInternal(
@@ -185,6 +187,7 @@ export function normalizeDecodedSessionInternal(
 ): InternalNormalization {
   const partial = options?.partial ?? false;
   const filters = options?.filters ?? DEFAULT_NORMALIZATION_FILTERS;
+  const source = options?.source;
   const diagnostics = [...decoded.diagnostics];
   const body: UnstampedBodyRecord[] = [];
   const bodyBases: CanonicalSourceBasis[] = [];
@@ -213,6 +216,7 @@ export function normalizeDecodedSessionInternal(
       bounds,
       filters,
       partial,
+      source,
     );
     if (!record) continue;
     const hasTimestamp =
@@ -305,12 +309,16 @@ function normalizeEvent(
   bounds: ResolvedNormalizationBounds,
   filters: ResolvedNormalizationFilters,
   partial: boolean,
+  source?: string,
 ): UnstampedBodyRecord | undefined {
   if (event.type === "message") {
     if (!event.content.trim()) {
       return undefined;
     }
+    // Skip noise filtering for CA and PI (they use these prefixes legitimately)
+    const shouldFilterNoise = source !== "claude-code-ca" && source !== "pi";
     if (
+      shouldFilterNoise &&
       event.role === "user" &&
       NOISE_PREFIXES.some((prefix) => event.content.trimStart().startsWith(prefix))
     ) {
