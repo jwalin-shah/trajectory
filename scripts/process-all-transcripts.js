@@ -167,7 +167,7 @@ console.log("CURSOR: Processing...");
 try {
   const chatsDir = path.join(HOME, ".cursor", "chats");
   if (fs.existsSync(chatsDir)) {
-    let dbCount = 0;
+    const dbFiles = [];
     const projectIds = fs.readdirSync(chatsDir);
     for (const projectId of projectIds) {
       const projectPath = path.join(chatsDir, projectId);
@@ -176,28 +176,87 @@ try {
         for (const sessionId of sessionIds) {
           const storeDb = path.join(projectPath, sessionId, "store.db");
           if (fs.existsSync(storeDb)) {
-            dbCount++;
+            dbFiles.push(storeDb);
           }
         }
       }
     }
-    stats.cursor.total = dbCount;
-    console.log(`  Found ${dbCount} SQLite databases`);
-    console.log(`  (requires better-sqlite3 to parse)\n`);
+
+    stats.cursor.total = dbFiles.length;
+
+    let processed = 0;
+    let errors = 0;
+
+    // Sample first 20 SQLite files
+    const sampleSize = Math.min(20, dbFiles.length);
+    for (let i = 0; i < sampleSize; i++) {
+      const dbPath = dbFiles[i];
+      try {
+        const result = normalizeTranscript({
+          source: "cursor",
+          transcript: dbPath,
+          sourceContext: { partial: true }
+        });
+
+        if (result && result.records && result.records.length > 0) {
+          processed++;
+        }
+      } catch (e) {
+        errors++;
+      }
+    }
+
+    stats.cursor.processed = processed;
+    stats.cursor.errors = errors;
+
+    const successRate = sampleSize > 0 ? ((processed / sampleSize) * 100).toFixed(0) : 0;
+    console.log(`  ✓ ${dbFiles.length} SQLite databases found, sampled ${sampleSize}`);
+    console.log(`  ✓ ${processed}/${sampleSize} decoded successfully (${successRate}%)\n`);
   }
 } catch (e) {
   console.log(`  ✗ Error: ${e.message}\n`);
 }
 
-// Special handling for agy (cloud-based)
+// Special handling for agy (Gemini, stores SQLite like Cursor)
 console.log("AGY: Processing...");
 try {
   const agyDir = path.join(HOME, ".gemini", "antigravity-cli", "conversations");
   if (fs.existsSync(agyDir)) {
-    const convos = fs.readdirSync(agyDir).filter((d) => !d.startsWith("."));
-    stats.agy.total = convos.length;
-    console.log(`  Found ${convos.length} conversations`);
-    console.log(`  (requires antigravity CLI to export)\n`);
+    const dbFiles = fs
+      .readdirSync(agyDir)
+      .filter((f) => f.endsWith(".db"))
+      .map((f) => path.join(agyDir, f));
+
+    stats.agy.total = dbFiles.length;
+
+    let processed = 0;
+    let errors = 0;
+
+    // Sample first 20 agy SQLite files
+    const sampleSize = Math.min(20, dbFiles.length);
+    for (let i = 0; i < sampleSize; i++) {
+      const dbPath = dbFiles[i];
+      try {
+        const result = normalizeTranscript({
+          source: "agy",
+          transcript: dbPath,
+          sourceContext: { partial: true }
+        });
+
+        if (result && result.records && result.records.length > 0) {
+          processed++;
+        }
+      } catch (e) {
+        errors++;
+      }
+    }
+
+    stats.agy.processed = processed;
+    stats.agy.errors = errors;
+
+    const successRate = sampleSize > 0 ? ((processed / sampleSize) * 100).toFixed(0) : 0;
+    console.log(`  ✓ ${dbFiles.length} conversations found, sampled ${sampleSize}`);
+    console.log(`  ✓ ${processed}/${sampleSize} decoded successfully (${successRate}%)\n`);
   }
 } catch (e) {
   console.log(`  ✗ Error: ${e.message}\n`);
