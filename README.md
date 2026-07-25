@@ -79,6 +79,8 @@ and is empty when the transcript required no recoverable cleanup.
 | [`openclaw`](src/adapters/openclaw/) | Native OpenClaw session JSONL (pi-agent session format) | `openclaw` |
 | [`openhands`](src/adapters/openhands/) | JSON event array or an events-API `{ "items": [...] }` envelope | `openhands` |
 | [`pi`](src/adapters/pi/) | Native pi-coding-agent session JSONL | `pi` |
+| [`cursor`](src/adapters/cursor/) | Cursor-agent SQLite store (`~/.cursor/chats/{project}/{uuid}/store.db`) | `cursor` |
+| [`agy`](src/adapters/agy/) | agy print-mode JSONL output (from `agy -p` or captured stdout) | `agy` |
 | [`deepagents`](src/adapters/deepagents/) | Deep Agents CLI LangGraph SQLite store plus `threadId` | `deepagents` |
 
 Each adapter lives in its own folder under [`src/adapters/`](src/adapters/)
