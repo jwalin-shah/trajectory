@@ -67,6 +67,8 @@ const LISTERS: Record<AnyTrajectorySource, SourceLister> = {
   openclaw: listOpenClawTrajectories,
   openhands: listOpenHandsTrajectories,
   pi: listPiTrajectories,
+  cursor: async () => [], // TODO: list cursor sessions from ~/.cursor/chats
+  agy: async () => [], // TODO: list agy sessions (API-based, no local store yet)
 };
 
 /**
