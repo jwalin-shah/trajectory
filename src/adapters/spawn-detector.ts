@@ -94,12 +94,22 @@ export interface AdapterConfig {
 }
 
 export const ADAPTER_CONFIGS: Record<string, AdapterConfig> = {
+  // Deployed adapters with active transcripts
   ct: { provider: "tokenrouter", defaultModel: "deepseek-v4-pro" },
   ca: { provider: "anthropic", defaultModel: "claude-opus-4-8" },
   pi: { provider: "anthropic", defaultModel: "claude-opus-4-8" },
   codex: { provider: "codex", defaultModel: "unknown" },
   cursor: { provider: "cursor", defaultModel: "unknown" },
+
+  // Cloud-based (no local store)
   agy: { provider: "agy", defaultModel: "unknown" },
+
+  // Not deployed / unknown status
+  cc: { provider: "anthropic", defaultModel: "claude-opus-4-8" },
+  cx: { provider: "codex", defaultModel: "unknown" },
+  cua: { provider: "cursor", defaultModel: "unknown" },
+
+  // Direct sessions
   "direct-claude-code": { provider: "anthropic", defaultModel: "claude-opus-4-8" },
 };
 
