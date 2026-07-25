@@ -19,7 +19,7 @@ export interface SpawnInfo {
  */
 export function detectSpawn(
   sessionId: string,
-  adapter: string,
+  _adapter: string,
   transcriptPath?: string
 ): SpawnInfo {
   const HOME = process.env.HOME || "/Users/jwalinshah";
@@ -42,7 +42,7 @@ export function detectSpawn(
           if (manifest.session_id === sessionId || worktree.includes(sessionId.slice(0, 8))) {
             // Found matching worktree - read ticket from brief
             const briefPath = path.join(wtPath, ".bridge", "brief.md");
-            let ticketId: string | undefined;
+            let ticketId: string | undefined = undefined;
 
             if (fs.existsSync(briefPath)) {
               const brief = fs.readFileSync(briefPath, "utf-8");
@@ -71,7 +71,6 @@ export function detectSpawn(
   // Strategy 2: Check git for session-id in commit history (if transcript path provided)
   if (transcriptPath) {
     try {
-      const dir = path.dirname(transcriptPath);
       // Would implement: git log --all --grep=sessionId, etc.
       // For now, skip (requires shell execution)
     } catch (e) {
@@ -82,7 +81,7 @@ export function detectSpawn(
   // Strategy 3: No spawn proof found
   return {
     spawned: false,
-    proofType: "none",
+    proofType: undefined,
   };
 }
 
