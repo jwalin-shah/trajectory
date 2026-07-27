@@ -1,0 +1,14 @@
+{
+  "title": "Audit 001: Global + Bridge Documentation Claims",
+  "description": "Extract all factual claims from ~/.claude-a/CLAUDE.md and bridge AGENTS.md/CLAUDE.md, link to evidence sources, add to claims-ledger.json",
+  "paths": [".claude-a/CLAUDE.md", "projects/bridge/AGENTS.md", "projects/bridge/CLAUDE.md"],
+  "allowed_paths": [".claude-a/", "projects/bridge/", "projects/trajectory/scripts/", "projects/portfolio/"],
+  "nongoals": ["verify claims yet", "fix documentation", "change bridge code"],
+  "proof_method": "verification_system",
+  "acceptance": [
+    "≥20 claims extracted from global + bridge docs",
+    "Each claim has evidence_type and evidence_source",
+    "All claims have status = UNKNOWN",
+    "claims-ledger.json is valid JSON"
+  ]
+}

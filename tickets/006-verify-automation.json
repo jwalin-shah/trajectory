@@ -1,0 +1,11 @@
+{
+  "title": "Audit 006: Wire Verification into Automation",
+  "description": "Create daily audit script. Integrate with bridge verify-machine. Add pre-commit hook for doc staleness checks",
+  "allowed_paths": ["projects/trajectory/scripts/", "projects/bridge/", "projects/orbit/"],
+  "proof_method": "verification_system",
+  "acceptance": [
+    "verify-all-claims.sh exits 0 if VERIFIED/UNKNOWN, exits 1 if STALE",
+    "Daily audit report generated",
+    "Pre-commit hook warns on stale edits"
+  ]
+}

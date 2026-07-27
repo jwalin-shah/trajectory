@@ -1,0 +1,815 @@
+{
+  "version": "1.0",
+  "claims": [
+    {
+      "id": "claim_1",
+      "claim": "1. **Never assume.** Verify before acting. Ask when uncertain. An assumption",
+      "doc_file": "~/.claude-a/CLAUDE.md",
+      "doc_location": "line 14",
+      "evidence_type": "git-commit",
+      "evidence_source": ".claude-a",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_2",
+      "claim": "a premise you have not verified, stop and verify it first.",
+      "doc_file": "~/.claude-a/CLAUDE.md",
+      "doc_location": "line 17",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_3",
+      "claim": "2. **Everything must be proved.** No claim without evidence. No fix without",
+      "doc_file": "~/.claude-a/CLAUDE.md",
+      "doc_location": "line 19",
+      "evidence_type": "git-commit",
+      "evidence_source": ".claude-a",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_4",
+      "claim": "reproduction. No \"should work\" without running it. Evidence means: a command",
+      "doc_file": "~/.claude-a/CLAUDE.md",
+      "doc_location": "line 20",
+      "evidence_type": "git-commit",
+      "evidence_source": ".claude-a",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_5",
+      "claim": "exists. Skipping the inventory is a bug, same as an unverified claim.",
+      "doc_file": "~/.claude-a/CLAUDE.md",
+      "doc_location": "line 39",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_6",
+      "claim": "Projects live under `~/projects/`. Agent instructions: `AGENTS.md` (real file),",
+      "doc_file": "~/.claude-a/CLAUDE.md",
+      "doc_location": "line 45",
+      "evidence_type": "git-commit",
+      "evidence_source": ".claude-a",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_7",
+      "claim": "Never auto-add agent name as co-author.",
+      "doc_file": "~/.claude-a/CLAUDE.md",
+      "doc_location": "line 47",
+      "evidence_type": "git-commit",
+      "evidence_source": ".claude-a",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_8",
+      "claim": "3. Never start work that overlaps with in-flight work in the same repo.",
+      "doc_file": "~/.claude-a/CLAUDE.md",
+      "doc_location": "line 59",
+      "evidence_type": "git-commit",
+      "evidence_source": ".claude-a",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_9",
+      "claim": "M4: create pipeline (brain dump → ticket) proven end-to-end with language",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 3",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/verification/",
+      "status": "VERIFIED",
+      "notes": "Bridge verification directory exists"
+    },
+    {
+      "id": "claim_10",
+      "claim": "M3 closed 2026-07-11 (all 11 items shipped). Verification: 77 invariants",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 5",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_11",
+      "claim": "(worker-writable) vs `VerifiedClaim`/`Evidence` (verifier-only).",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 36",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_12",
+      "claim": "(allowlisted, `os.Stat`-checked absolute paths, never bare names or",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 40",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_13",
+      "claim": "- Worker types and verifier types never share a struct: `WorkerManifest` has",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 63",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_14",
+      "claim": "no `Evidence`/`Verified` fields, so `verify.LoadManifest` uses",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 64",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_15",
+      "claim": "counted in the final pass/fail tally, but never trigger a retry. Every",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 85",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_16",
+      "claim": "before trusting it: for `DeliveryPR` tickets it runs `gh pr view",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 93",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_17",
+      "claim": "<reference> --json state -q .state` and requires the trimmed output to be",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 94",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_18",
+      "claim": "for `DeliveryReport` tickets it `os.Stat`s the reference and fails closed",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 96",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_19",
+      "claim": "`DeliveryPR` ticket, `handleRetryableFailure` reconciles against observable",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 101",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_20",
+      "claim": "and the escalation reason names the PR too, so `stale` is never the ledger's",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 107",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_21",
+      "claim": "sole truth while the work is visibly delivered. Reconcile only reports: it",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 108",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_22",
+      "claim": "unknown on stderr, never as \"no PR\".",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 111",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_23",
+      "claim": "- **Z3 proofs** (8 files, all UNSAT): `create_inductive.py`,",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 120",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/internal/spawn/release.go",
+      "status": "VERIFIED",
+      "notes": "Found 8 Z3 proof files"
+    },
+    {
+      "id": "claim_24",
+      "claim": "sandbox wrapper path) to `mm-ctl`. `adapterPath` always comes from `resolveAdapter`'s",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 157",
+      "evidence_type": "transcript-sessions",
+      "evidence_source": "deny-default OR permission",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_25",
+      "claim": "always fires within the timeout window: if the caller passes staleAfter",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 179",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_26",
+      "claim": "Tests that set these hooks must not call `t.Parallel()`.",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 189",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_27",
+      "claim": "CLI does not expose a blocking ack for pane input delivery - identical to tmux",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 191",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_28",
+      "claim": "1196 axioms in Neo4j at `neo4j://localhost:7687`. The `internal/knowledge/` Go",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 198",
+      "evidence_type": "neo4j-query",
+      "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
+      "status": "STALE",
+      "notes": ""
+    },
+    {
+      "id": "claim_29",
+      "claim": "against 117 axioms across 17 categories (Saltzer-Schroeder, software-correctness,",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 204",
+      "evidence_type": "neo4j-query",
+      "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_30",
+      "claim": "software-testing, sandbox, architecture, safety, provenance, etc.).",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 205",
+      "evidence_type": "transcript-sessions",
+      "evidence_source": "deny-default OR permission",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_31",
+      "claim": "- #7: Bridge does not control delivery, only reports on it (worker commits before verify)",
+      "doc_file": "~/projects/bridge/AGENTS.md",
+      "doc_location": "line 208",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_32",
+      "claim": "M4: create pipeline (brain dump → ticket) proven end-to-end with language",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 3",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/verification/",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_33",
+      "claim": "M3 closed 2026-07-11 (all 11 items shipped). Verification: 77 invariants",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 5",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_34",
+      "claim": "(worker-writable) vs `VerifiedClaim`/`Evidence` (verifier-only).",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 36",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_35",
+      "claim": "(allowlisted, `os.Stat`-checked absolute paths, never bare names or",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 40",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_36",
+      "claim": "- Worker types and verifier types never share a struct: `WorkerManifest` has",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 63",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_37",
+      "claim": "no `Evidence`/`Verified` fields, so `verify.LoadManifest` uses",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 64",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_38",
+      "claim": "counted in the final pass/fail tally, but never trigger a retry. Every",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 85",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_39",
+      "claim": "before trusting it: for `DeliveryPR` tickets it runs `gh pr view",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 93",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_40",
+      "claim": "<reference> --json state -q .state` and requires the trimmed output to be",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 94",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_41",
+      "claim": "for `DeliveryReport` tickets it `os.Stat`s the reference and fails closed",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 96",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_42",
+      "claim": "`DeliveryPR` ticket, `handleRetryableFailure` reconciles against observable",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 101",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_43",
+      "claim": "and the escalation reason names the PR too, so `stale` is never the ledger's",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 107",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_44",
+      "claim": "sole truth while the work is visibly delivered. Reconcile only reports: it",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 108",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_45",
+      "claim": "unknown on stderr, never as \"no PR\".",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 111",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_46",
+      "claim": "- **Z3 proofs** (8 files, all UNSAT): `create_inductive.py`,",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 120",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/internal/spawn/release.go",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_47",
+      "claim": "sandbox wrapper path) to `mm-ctl`. `adapterPath` always comes from `resolveAdapter`'s",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 157",
+      "evidence_type": "transcript-sessions",
+      "evidence_source": "deny-default OR permission",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_48",
+      "claim": "always fires within the timeout window: if the caller passes staleAfter",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 179",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_49",
+      "claim": "Tests that set these hooks must not call `t.Parallel()`.",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 189",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_50",
+      "claim": "CLI does not expose a blocking ack for pane input delivery - identical to tmux",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 191",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_51",
+      "claim": "1196 axioms in Neo4j at `neo4j://localhost:7687`. The `internal/knowledge/` Go",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 198",
+      "evidence_type": "neo4j-query",
+      "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
+      "status": "STALE",
+      "notes": ""
+    },
+    {
+      "id": "claim_52",
+      "claim": "against 117 axioms across 17 categories (Saltzer-Schroeder, software-correctness,",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 204",
+      "evidence_type": "neo4j-query",
+      "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_53",
+      "claim": "software-testing, sandbox, architecture, safety, provenance, etc.).",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 205",
+      "evidence_type": "transcript-sessions",
+      "evidence_source": "deny-default OR permission",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_54",
+      "claim": "- #7: Bridge does not control delivery, only reports on it (worker commits before verify)",
+      "doc_file": "~/projects/bridge/CLAUDE.md",
+      "doc_location": "line 208",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_55",
+      "claim": "verified summaries, and links to the maps that own unresolved questions.",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 7",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "VERIFIED",
+      "notes": ""
+    },
+    {
+      "id": "claim_56",
+      "claim": "OPERATING_MODEL.md  -- routing policy: how to start work, active lanes, WIP limits",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 20",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_57",
+      "claim": "PROOF_TO_PRODUCTION.md          -- certification contract for verified claims",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 25",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/internal/spawn/release.go",
+      "status": "VERIFIED",
+      "notes": ""
+    },
+    {
+      "id": "claim_58",
+      "claim": "research/           -- completed investigations and classification reports",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 27",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_59",
+      "claim": "verified-v1-baseline.md             -- verified v1 baseline findings",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 31",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "VERIFIED",
+      "notes": ""
+    },
+    {
+      "id": "claim_60",
+      "claim": "intake/             -- adversarial review prompts and verified baseline intake",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 35",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "VERIFIED",
+      "notes": ""
+    },
+    {
+      "id": "claim_61",
+      "claim": "verified-portfolio-baseline.md      -- verified baseline intake (35K)",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 38",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "VERIFIED",
+      "notes": ""
+    },
+    {
+      "id": "claim_62",
+      "claim": "clean-baseline/   -- active map: \"every claim verified against live reality\"",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 44",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "VERIFIED",
+      "notes": ""
+    },
+    {
+      "id": "claim_63",
+      "claim": "- **LLM output is never machine-fact evidence.** Claims derived from LLM output",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 57",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_64",
+      "claim": "- **Wayfinder maps own unresolved questions.** Active maps live in `wayfinder/`.",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 59",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_65",
+      "claim": "- **WIP limit: 3 active lanes.** Voice product, BTW product, Platform. See",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 66",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_66",
+      "claim": "The active Wayfinder map is **clean-baseline** (`wayfinder/clean-baseline/map.md`):",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 71",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_67",
+      "claim": "launcher, skill, memory file, and knowledge-base entry is verified against",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 74",
+      "evidence_type": "git-commit",
+      "evidence_source": "bridge/",
+      "status": "VERIFIED",
+      "notes": ""
+    },
+    {
+      "id": "claim_68",
+      "claim": "- **6 open tickets:** complete inventory (#001), audit memory (#002), verify",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 76",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_69",
+      "claim": "chosen. Machine facts currently live in prose documents, not structured",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 88",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_70",
+      "claim": "not track ticket state programmatically. Actual ticket state lives in GitHub",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 91",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_71",
+      "claim": "- **Two-track design tension.** The project portfolio track is actively worked;",
+      "doc_file": "~/projects/portfolio/AGENTS.md",
+      "doc_location": "line 96",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_72",
+      "claim": "1. **Literature axioms** (`axioms.json`) — claims from books, standards, papers. 2177 VERIFIED, 1 UNCERTAIN, 5 DISPUTED.",
+      "doc_file": "~/projects/axioms/AGENTS.md",
+      "doc_location": "line 17",
+      "evidence_type": "neo4j-query",
+      "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_73",
+      "claim": "| `house-rule` (our own rules) | 0% | NO TRUST — must review |",
+      "doc_file": "~/projects/axioms/AGENTS.md",
+      "doc_location": "line 43",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_74",
+      "claim": "- Never extract invariants from guidance literature. Standards/best practices can't be rendered as ∀ equations.",
+      "doc_file": "~/projects/axioms/AGENTS.md",
+      "doc_location": "line 47",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_75",
+      "claim": "- Extracted equations must not be truncated. If source is on disk, re-extract; don't re-verify a truncated equation.",
+      "doc_file": "~/projects/axioms/AGENTS.md",
+      "doc_location": "line 48",
+      "evidence_type": "git-commit",
+      "evidence_source": "projects",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_76",
+      "claim": "- An axiom is not verified until there's a TestAX* gate that proves it holds for the code.",
+      "doc_file": "~/projects/axioms/AGENTS.md",
+      "doc_location": "line 53",
+      "evidence_type": "neo4j-query",
+      "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_77",
+      "claim": "1. **Scouts** the axiom corpus for relevant categories (Saltzer-Schroeder, software-correctness, software-testing, architecture, sandbox, safety, prov",
+      "doc_file": "~/projects/axioms/AGENTS.md",
+      "doc_location": "line 61",
+      "evidence_type": "neo4j-query",
+      "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_78",
+      "claim": "**Filtering methodology:** Not all 2183 axioms apply to bridge/orbit. The pre-audit filter selects axioms by:",
+      "doc_file": "~/projects/axioms/AGENTS.md",
+      "doc_location": "line 78",
+      "evidence_type": "neo4j-query",
+      "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_79",
+      "claim": "1. **Category match:** architecture, sandbox, software-correctness, software-testing, testing, testability, provenance, systems, safety, Saltzer-Schro",
+      "doc_file": "~/projects/axioms/AGENTS.md",
+      "doc_location": "line 79",
+      "evidence_type": "transcript-sessions",
+      "evidence_source": "deny-default OR permission",
+      "status": "UNKNOWN",
+      "notes": ""
+    },
+    {
+      "id": "claim_80",
+      "claim": "| `axioms.json` | 2183 axioms (the corpus) |",
+      "doc_file": "~/projects/axioms/AGENTS.md",
+      "doc_location": "line 89",
+      "evidence_type": "neo4j-query",
+      "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
+      "status": "VERIFIED",
+      "notes": "2178 axioms"
+    },
+    {
+      "id": "claim_81",
+      "claim": "| `FINDINGS.md` | Verification run findings (825 axioms) |",
+      "doc_file": "~/projects/axioms/AGENTS.md",
+      "doc_location": "line 92",
+      "evidence_type": "neo4j-query",
+      "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
+      "status": "UNKNOWN",
+      "notes": ""
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Audit 003: Orbit + Knowledge-Engine Docs",
+  "description": "Extract claims from orbit and knowledge-engine AGENTS.md/CLAUDE.md. Link to evidence sources. Add to claims-ledger.json",
+  "allowed_paths": ["projects/orbit/", "projects/knowledge-engine/", "projects/trajectory/scripts/"],
+  "proof_method": "verification_system",
+  "acceptance": [
+    "≥15 claims extracted",
+    "Each has evidence_source",
+    "JSON valid"
+  ]
+}

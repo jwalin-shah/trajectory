@@ -1,0 +1,11 @@
+{
+  "title": "Audit 004: Priority Projects (ApplyPilot, JACC, Rodium, Trajectory)",
+  "description": "Extract claims from 4 priority project AGENTS.md files. Link to git evidence. Add to claims-ledger.json",
+  "allowed_paths": ["projects/ApplyPilot/", "projects/job-application-command-center/", "projects/rodium/", "projects/trajectory/", "projects/trajectory/scripts/"],
+  "proof_method": "verification_system",
+  "acceptance": [
+    "≥2 claims per project (8+ total)",
+    "All have evidence_source",
+    "JSON valid"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "ticket_id": "doc-audit-verify-all",
+  "target_repository": "projects/trajectory",
+  "work_description": "comprehensive-documentation-audit-2026-07-25",
+  "scope": [
+    "trajectory/scripts/",
+    "bridge/AGENTS.md",
+    "bridge/CLAUDE.md",
+    "bridge/verification/",
+    "bridge/docs/INVARIANT_CATALOG.md",
+    "axioms/AGENTS.md",
+    "axioms/axioms.json",
+    "portfolio/"
+  ],
+  "authorization": "captain-approved for documentation verification and axiom corpus audit"
+}
