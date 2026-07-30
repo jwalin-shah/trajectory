@@ -5,6 +5,13 @@
 
 cd "$(dirname "$0")"/..
 
+: "${NEO4J_PASSWORD:?NEO4J_PASSWORD is required; refusing an implicit credential}"
+NEO4J_USER="${NEO4J_USER:-neo4j}"
+
+neo4j_curl() {
+  curl -s --config <(printf 'user = "%s:%s"\n' "$NEO4J_USER" "$NEO4J_PASSWORD") "$@"
+}
+
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔍 DIRECT VERIFICATION: All 55 Claims"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -28,7 +35,7 @@ verify_claim() {
       
       # Special case: axiom count
       if echo "$claim" | grep -q "2231 axiom"; then
-        actual=$(curl -s -u neo4j:axiom-knowledge http://localhost:7474/db/neo4j/tx/commit \
+        actual=$(neo4j_curl http://localhost:7474/db/neo4j/tx/commit \
           -H "Content-Type: application/json" \
           -d '{"statements":[{"statement":"MATCH (a:Axiom) RETURN count(a)"}]}' 2>/dev/null | jq '.results[0].data[0].row[0]' 2>/dev/null)
         if [ "$actual" = "2231" ]; then
@@ -86,7 +93,7 @@ echo
 
 # Test 1: Axiom count
 echo -n "  Axiom count (2231): "
-actual=$(curl -s -u neo4j:axiom-knowledge http://localhost:7474/db/neo4j/tx/commit \
+actual=$(neo4j_curl http://localhost:7474/db/neo4j/tx/commit \
   -H "Content-Type: application/json" \
   -d '{"statements":[{"statement":"MATCH (a:Axiom) RETURN count(a)"}]}' 2>/dev/null | jq '.results[0].data[0].row[0]' 2>/dev/null)
 if [ "$actual" = "2231" ]; then

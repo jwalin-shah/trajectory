@@ -139,7 +139,10 @@ bash scripts/verify-doc-staleness.sh ~/projects/bridge/AGENTS.md "git-log:bridge
 
 For Neo4j queries:
 ```bash
-curl -s -u neo4j:axiom-knowledge http://localhost:7474/db/neo4j/tx/commit \
+: "${NEO4J_PASSWORD:?NEO4J_PASSWORD is required; refusing an implicit credential}"
+NEO4J_USER="${NEO4J_USER:-neo4j}"
+curl -s --config <(printf 'user = "%s:%s"\n' "$NEO4J_USER" "$NEO4J_PASSWORD") \
+  http://localhost:7474/db/neo4j/tx/commit \
   -H "Content-Type: application/json" \
   -d '{"statements":[{"statement":"MATCH (a:Axiom) RETURN count(a)"}]}'
 ```
@@ -174,7 +177,10 @@ Output shows:
 
 **Verification:**
 ```bash
-curl -s -u neo4j:axiom-knowledge http://localhost:7474/db/neo4j/tx/commit \
+: "${NEO4J_PASSWORD:?NEO4J_PASSWORD is required; refusing an implicit credential}"
+NEO4J_USER="${NEO4J_USER:-neo4j}"
+curl -s --config <(printf 'user = "%s:%s"\n' "$NEO4J_USER" "$NEO4J_PASSWORD") \
+  http://localhost:7474/db/neo4j/tx/commit \
   -H "Content-Type: application/json" \
   -d '{"statements":[{"statement":"MATCH (a:Axiom) RETURN count(a)"}]}' | jq '.results[0].data[0].row[0]'
 ```

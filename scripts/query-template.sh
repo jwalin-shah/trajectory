@@ -6,15 +6,17 @@
 
 QUERY_NAME=${1:-help}
 NEO4J_USER=${NEO4J_USER:-neo4j}
-NEO4J_PASS=${NEO4J_PASS:-axiom-knowledge}
+: "${NEO4J_PASSWORD:?NEO4J_PASSWORD is required; refusing an implicit credential}"
 NEO4J_URL=${NEO4J_URL:-http://localhost:7474/db/neo4j/tx/commit}
 
-auth_header=$(echo -n "$NEO4J_USER:$NEO4J_PASS" | base64)
+neo4j_curl() {
+  curl -s --config <(printf 'user = "%s:%s"\n' "$NEO4J_USER" "$NEO4J_PASSWORD") "$@"
+}
 
 # Helper to run query
 run_query() {
   local cypher=$1
-  curl -s -u "$NEO4J_USER:$NEO4J_PASS" "$NEO4J_URL" \
+  neo4j_curl "$NEO4J_URL" \
     -H "Content-Type: application/json" \
     -d "{\"statements\":[{\"statement\":\"$cypher\"}]}" | jq '.results[0].data[].row'
 }

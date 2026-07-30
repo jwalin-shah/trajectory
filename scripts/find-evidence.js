@@ -7,9 +7,12 @@
  * Example: find-evidence.js "deny-default" 50
  */
 
-const NEO4J_URL = "http://localhost:7474/db/neo4j/tx/commit";
-const NEO4J_USER = "neo4j";
-const NEO4J_PASS = "axiom-knowledge";
+const NEO4J_URL = process.env.NEO4J_URL || "http://localhost:7474/db/neo4j/tx/commit";
+const NEO4J_USER = process.env.NEO4J_USER || "neo4j";
+const NEO4J_PASS = (process.env.NEO4J_PASSWORD || "").trim();
+if (!NEO4J_PASS) {
+  throw new Error("NEO4J_PASSWORD is required; refusing an implicit credential");
+}
 
 async function queryNeo4j(cypher) {
   const auth = Buffer.from(`${NEO4J_USER}:${NEO4J_PASS}`).toString("base64");

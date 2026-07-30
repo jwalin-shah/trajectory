@@ -810,6 +810,16 @@
       "evidence_source": "MATCH (a:Axiom) RETURN count(a)",
       "status": "UNKNOWN",
       "notes": ""
+    },
+    {
+      "id": "trajectory-neo4j-credential-boundary",
+      "claim": "Trajectory verification and transcript-loading paths require NEO4J_PASSWORD and do not define an implicit Neo4j credential fallback.",
+      "doc_file": "~/projects/trajectory/scripts/VERIFICATION_SYSTEM.md",
+      "doc_location": "Neo4j query verification examples",
+      "evidence_type": "git-commit",
+      "evidence_source": "scripts/direct-verify-all.sh; scripts/query-template.sh; scripts/verify-doc-staleness.sh; scripts/verify-claims.js; scripts/find-evidence.js; scripts/load-normalized-to-neo4j.js; scripts/load-to-neo4j.js",
+      "status": "VERIFIED",
+      "notes": "Shell syntax, Node syntax, and no-credential probes passed; curl credentials are supplied through a transient config stream rather than a -u argv literal."
     }
   ]
 }
