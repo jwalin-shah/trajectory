@@ -3,6 +3,7 @@
  */
 
 import { readdirSync, statSync } from "node:fs";
+import { createRequire } from "node:module";
 import { join } from "node:path";
 import type { TrajectoryListing } from "../listing.js";
 import { NormalizationError } from "../types.js";
@@ -92,6 +93,81 @@ const dynamicImport = (specifier: string): Promise<Record<string, unknown>> =>
  * provides: `node:sqlite` (Node 22.5+) or `bun:sqlite`. No native dependency
  * is added; older Node versions get a clear error.
  */
+
+/**
+ * Synchronous counterpart of {@link openSqliteReadOnly} for SourceAdapter.decode,
+ * which is a sync API. Prefer the async form for listing paths.
+ */
+const requireSqlite = createRequire(import.meta.url);
+
+export function openSqliteReadOnlySync(path: string): SqliteHandle {
+  let moduleError: unknown;
+  try {
+    const sqlite = requireSqlite("node:sqlite") as {
+      DatabaseSync: new (
+        location: string,
+        options?: { readOnly: boolean },
+      ) => {
+        prepare(sql: string): { all(...params: (string | number)[]): Record<string, unknown>[] };
+        close(): void;
+      };
+    };
+    const DatabaseSync = sqlite.DatabaseSync;
+    return openWithWalFallback(
+      (readOnly) => {
+        const database = readOnly
+          ? new DatabaseSync(path, { readOnly: true })
+          : new DatabaseSync(path);
+        return {
+          all: (sql, ...params) => database.prepare(sql).all(...params),
+          close: () => database.close(),
+        };
+      },
+      path,
+    );
+  } catch (error) {
+    if (error instanceof NormalizationError) throw error;
+    if (!isModuleMissing(error)) throw sqliteOpenFailure(path, error);
+    moduleError = error;
+  }
+  try {
+    const sqlite = requireSqlite("bun:sqlite") as {
+      Database: new (
+        location: string,
+        options?: { readonly: boolean },
+      ) => {
+        query(sql: string): { all(...params: (string | number)[]): Record<string, unknown>[] };
+        close(): void;
+      };
+    };
+    const Database = sqlite.Database;
+    return openWithWalFallback(
+      (readOnly) => {
+        const database = readOnly
+          ? new Database(path, { readonly: true })
+          : new Database(path);
+        return {
+          all: (sql, ...params) => database.query(sql).all(...params),
+          close: () => database.close(),
+        };
+      },
+      path,
+    );
+  } catch (error) {
+    if (error instanceof NormalizationError) throw error;
+    if (isModuleMissing(error)) {
+      throw new NormalizationError(
+        "listing_unavailable",
+        `SQLite decode requires a runtime with built-in SQLite (Node.js 22.5+ or Bun): ${String(
+          moduleError instanceof Error ? moduleError.message : moduleError,
+        )}`,
+      );
+    }
+    throw sqliteOpenFailure(path, error);
+  }
+}
+
+
 export async function openSqliteReadOnly(path: string): Promise<SqliteHandle> {
   let moduleError: unknown;
   try {

@@ -1138,8 +1138,174 @@ var piAdapter = {
   }
 };
 
+// src/adapters/listing-shared.ts
+import { readdirSync, statSync } from "node:fs";
+import { createRequire } from "node:module";
+import { join } from "node:path";
+function sortListings(items) {
+  return items.sort((left, right) => {
+    const l = left.updatedAt ?? "";
+    const r = right.updatedAt ?? "";
+    if (l !== r)
+      return l < r ? 1 : -1;
+    return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
+  });
+}
+function safeReadDir(path) {
+  try {
+    return readdirSync(path, { withFileTypes: true }).map((entry) => ({
+      name: entry.name,
+      isDirectory: entry.isDirectory(),
+      isFile: entry.isFile()
+    }));
+  } catch {
+    return [];
+  }
+}
+function safeStat(path) {
+  try {
+    const stats = statSync(path);
+    return { mtimeMs: stats.mtimeMs, sizeBytes: stats.size };
+  } catch {
+    return;
+  }
+}
+function listingFromFile(id, path) {
+  const facts = safeStat(path);
+  if (!facts)
+    return;
+  return {
+    id,
+    path,
+    updatedAt: new Date(facts.mtimeMs).toISOString(),
+    sizeBytes: facts.sizeBytes
+  };
+}
+function collectFiles(root, extension, depth) {
+  if (depth < 0)
+    return [];
+  const collected = [];
+  for (const entry of safeReadDir(root)) {
+    const full = join(root, entry.name);
+    if (entry.isFile && entry.name.endsWith(extension)) {
+      collected.push(full);
+    } else if (entry.isDirectory) {
+      collected.push(...collectFiles(full, extension, depth - 1));
+    }
+  }
+  return collected;
+}
+var dynamicImport = (specifier) => import(specifier);
+var requireSqlite = createRequire(import.meta.url);
+function openSqliteReadOnlySync(path) {
+  let moduleError;
+  try {
+    const sqlite = requireSqlite("node:sqlite");
+    const DatabaseSync = sqlite.DatabaseSync;
+    return openWithWalFallback((readOnly) => {
+      const database = readOnly ? new DatabaseSync(path, { readOnly: true }) : new DatabaseSync(path);
+      return {
+        all: (sql, ...params) => database.prepare(sql).all(...params),
+        close: () => database.close()
+      };
+    }, path);
+  } catch (error) {
+    if (error instanceof NormalizationError)
+      throw error;
+    if (!isModuleMissing(error))
+      throw sqliteOpenFailure(path, error);
+    moduleError = error;
+  }
+  try {
+    const sqlite = requireSqlite("bun:sqlite");
+    const Database = sqlite.Database;
+    return openWithWalFallback((readOnly) => {
+      const database = readOnly ? new Database(path, { readonly: true }) : new Database(path);
+      return {
+        all: (sql, ...params) => database.query(sql).all(...params),
+        close: () => database.close()
+      };
+    }, path);
+  } catch (error) {
+    if (error instanceof NormalizationError)
+      throw error;
+    if (isModuleMissing(error)) {
+      throw new NormalizationError("listing_unavailable", `SQLite decode requires a runtime with built-in SQLite (Node.js 22.5+ or Bun): ${String(moduleError instanceof Error ? moduleError.message : moduleError)}`);
+    }
+    throw sqliteOpenFailure(path, error);
+  }
+}
+async function openSqliteReadOnly(path) {
+  let moduleError;
+  try {
+    const sqlite = await dynamicImport("node:sqlite");
+    const DatabaseSync = sqlite.DatabaseSync;
+    return openWithWalFallback((readOnly) => {
+      const database = readOnly ? new DatabaseSync(path, { readOnly: true }) : new DatabaseSync(path);
+      return {
+        all: (sql, ...params) => database.prepare(sql).all(...params),
+        close: () => database.close()
+      };
+    }, path);
+  } catch (error) {
+    if (error instanceof NormalizationError)
+      throw error;
+    if (!isModuleMissing(error))
+      throw sqliteOpenFailure(path, error);
+    moduleError = error;
+  }
+  try {
+    const sqlite = await dynamicImport("bun:sqlite");
+    const Database = sqlite.Database;
+    return openWithWalFallback((readOnly) => {
+      const database = readOnly ? new Database(path, { readonly: true }) : new Database(path);
+      return {
+        all: (sql, ...params) => database.query(sql).all(...params),
+        close: () => database.close()
+      };
+    }, path);
+  } catch (error) {
+    if (error instanceof NormalizationError)
+      throw error;
+    if (isModuleMissing(error)) {
+      throw new NormalizationError("listing_unavailable", `Listing this source requires a runtime with built-in SQLite (Node.js 22.5+ or Bun): ${String(moduleError instanceof Error ? moduleError.message : moduleError)}`);
+    }
+    throw sqliteOpenFailure(path, error);
+  }
+}
+function openWithWalFallback(open, path) {
+  let readOnlyError;
+  for (const readOnly of [true, false]) {
+    let handle;
+    try {
+      handle = open(readOnly);
+      handle.all("SELECT 1");
+      return handle;
+    } catch (error) {
+      try {
+        handle?.close();
+      } catch {}
+      if (readOnly) {
+        readOnlyError = error;
+        continue;
+      }
+      throw sqliteOpenFailure(path, readOnlyError ?? error);
+    }
+  }
+  throw sqliteOpenFailure(path, readOnlyError);
+}
+function sqliteOpenFailure(path, error) {
+  return new NormalizationError("invalid_input", `Could not open SQLite store ${JSON.stringify(path)}: ${error instanceof Error ? error.message : String(error)}`);
+}
+function isModuleMissing(error) {
+  if (error === null || typeof error !== "object")
+    return false;
+  const code = error.code;
+  const message = error.message;
+  return code === "ERR_MODULE_NOT_FOUND" || code === "MODULE_NOT_FOUND" || code === "ERR_UNKNOWN_BUILTIN_MODULE" || typeof message === "string" && /Cannot find (module|package)|No such built-in module/i.test(message);
+}
+
 // src/adapters/cursor/index.ts
-import Database from "better-sqlite3";
 var cursorAdapter = {
   source: "cursor",
   decode(input) {
@@ -1147,14 +1313,14 @@ var cursorAdapter = {
     const events = [];
     const contextSource = { source: "cursor" };
     try {
-      const db = new Database(input, { readonly: true });
+      const db = openSqliteReadOnlySync(input);
       try {
         let messages = [];
-        const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+        const tables = db.all("SELECT name FROM sqlite_master WHERE type='table'");
         const tableNames = tables.map((t) => t.name);
         const messageTable = tableNames.find((t) => t.toLowerCase().includes("message") || t.toLowerCase().includes("chat") || t.toLowerCase().includes("conversation"));
         if (messageTable) {
-          const schema = db.prepare(`PRAGMA table_info(${messageTable})`).all();
+          const schema = db.all(`PRAGMA table_info(${messageTable})`);
           const columnNames = schema.map((c) => c.name);
           const roleCol = columnNames.find((c) => c.toLowerCase() === "role");
           const contentCol = columnNames.find((c) => c.toLowerCase() === "content" || c.toLowerCase() === "text" || c.toLowerCase() === "message");
@@ -1166,7 +1332,7 @@ var cursorAdapter = {
             if (columnNames.includes("id"))
               cols.unshift("id");
             const query = `SELECT ${cols.join(", ")} FROM ${messageTable} ORDER BY rowid`;
-            messages = db.prepare(query).all();
+            messages = db.all(query);
           }
         }
         for (const msg of messages) {
@@ -1179,7 +1345,7 @@ var cursorAdapter = {
               role,
               content,
               ...ts ? { timestamp: ts } : {},
-              ...msg.id ? { sourceRecordId: String(msg.id) } : {}
+              ...msg.id !== undefined ? { sourceRecordId: String(msg.id) } : {}
             };
             events.push(event);
           }
@@ -1208,7 +1374,6 @@ var cursorAdapter = {
 };
 
 // src/adapters/agy/index.ts
-import Database2 from "better-sqlite3";
 var agyAdapter = {
   source: "agy",
   decode(input) {
@@ -1216,14 +1381,14 @@ var agyAdapter = {
     const events = [];
     const contextSource = { source: "agy" };
     try {
-      const db = new Database2(input, { readonly: true });
+      const db = openSqliteReadOnlySync(input);
       try {
         let messages = [];
-        const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+        const tables = db.all("SELECT name FROM sqlite_master WHERE type='table'");
         const tableNames = tables.map((t) => t.name);
         const messageTable = tableNames.find((t) => t.toLowerCase() === "messages" || t.toLowerCase() === "history" || t.toLowerCase() === "conversation" || t.toLowerCase().includes("message"));
         if (messageTable) {
-          const schema = db.prepare(`PRAGMA table_info(${messageTable})`).all();
+          const schema = db.all(`PRAGMA table_info(${messageTable})`);
           const columnNames = schema.map((c) => c.name);
           const roleCol = columnNames.find((c) => c.toLowerCase() === "role" || c.toLowerCase() === "author");
           const contentCol = columnNames.find((c) => c.toLowerCase() === "content" || c.toLowerCase() === "text" || c.toLowerCase() === "message" || c.toLowerCase() === "body");
@@ -1235,7 +1400,7 @@ var agyAdapter = {
             if (columnNames.includes("id"))
               cols.unshift("id");
             const query = `SELECT ${cols.join(", ")} FROM ${messageTable} ORDER BY rowid`;
-            messages = db.prepare(query).all();
+            messages = db.all(query);
           }
         }
         for (const msg of messages) {
@@ -1249,7 +1414,7 @@ var agyAdapter = {
               role: normalizedRole,
               content,
               ...ts ? { timestamp: ts } : {},
-              ...msg.id ? { sourceRecordId: String(msg.id) } : {}
+              ...msg.id !== undefined ? { sourceRecordId: String(msg.id) } : {}
             };
             events.push(event);
           }
@@ -2102,7 +2267,7 @@ function sliceCodePoints(text, start, end) {
 import { spawn } from "node:child_process";
 import { accessSync, constants } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { join as join2 } from "node:path";
 import { fileURLToPath } from "node:url";
 var MAX_HELPER_OUTPUT_BYTES = 64 * 1024 * 1024;
 async function normalizeCheckpoint(input) {
@@ -2127,7 +2292,7 @@ async function decodeCheckpoint(input) {
 }
 async function loadDeepAgentsCheckpoint(checkpoint) {
   validateLocation(checkpoint);
-  const path = checkpoint.path ?? join(homedir(), ".deepagents", "sessions.db");
+  const path = checkpoint.path ?? join2(homedir(), ".deepagents", "sessions.db");
   const python = checkpoint.pythonExecutable ?? process.env.PYTHON ?? "python3";
   const helper = resolveHelperPath();
   return await new Promise((resolve, reject) => {
@@ -2338,135 +2503,6 @@ function isToolCall(value) {
 // src/adapters/claude-code/list.ts
 import { homedir as homedir2 } from "node:os";
 import { basename, join as join3 } from "node:path";
-
-// src/adapters/listing-shared.ts
-import { readdirSync, statSync } from "node:fs";
-import { join as join2 } from "node:path";
-function sortListings(items) {
-  return items.sort((left, right) => {
-    const l = left.updatedAt ?? "";
-    const r = right.updatedAt ?? "";
-    if (l !== r)
-      return l < r ? 1 : -1;
-    return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
-  });
-}
-function safeReadDir(path) {
-  try {
-    return readdirSync(path, { withFileTypes: true }).map((entry) => ({
-      name: entry.name,
-      isDirectory: entry.isDirectory(),
-      isFile: entry.isFile()
-    }));
-  } catch {
-    return [];
-  }
-}
-function safeStat(path) {
-  try {
-    const stats = statSync(path);
-    return { mtimeMs: stats.mtimeMs, sizeBytes: stats.size };
-  } catch {
-    return;
-  }
-}
-function listingFromFile(id, path) {
-  const facts = safeStat(path);
-  if (!facts)
-    return;
-  return {
-    id,
-    path,
-    updatedAt: new Date(facts.mtimeMs).toISOString(),
-    sizeBytes: facts.sizeBytes
-  };
-}
-function collectFiles(root, extension, depth) {
-  if (depth < 0)
-    return [];
-  const collected = [];
-  for (const entry of safeReadDir(root)) {
-    const full = join2(root, entry.name);
-    if (entry.isFile && entry.name.endsWith(extension)) {
-      collected.push(full);
-    } else if (entry.isDirectory) {
-      collected.push(...collectFiles(full, extension, depth - 1));
-    }
-  }
-  return collected;
-}
-var dynamicImport = (specifier) => import(specifier);
-async function openSqliteReadOnly(path) {
-  let moduleError;
-  try {
-    const sqlite = await dynamicImport("node:sqlite");
-    const DatabaseSync = sqlite.DatabaseSync;
-    return openWithWalFallback((readOnly) => {
-      const database = readOnly ? new DatabaseSync(path, { readOnly: true }) : new DatabaseSync(path);
-      return {
-        all: (sql, ...params) => database.prepare(sql).all(...params),
-        close: () => database.close()
-      };
-    }, path);
-  } catch (error) {
-    if (error instanceof NormalizationError)
-      throw error;
-    if (!isModuleMissing(error))
-      throw sqliteOpenFailure(path, error);
-    moduleError = error;
-  }
-  try {
-    const sqlite = await dynamicImport("bun:sqlite");
-    const Database3 = sqlite.Database;
-    return openWithWalFallback((readOnly) => {
-      const database = readOnly ? new Database3(path, { readonly: true }) : new Database3(path);
-      return {
-        all: (sql, ...params) => database.query(sql).all(...params),
-        close: () => database.close()
-      };
-    }, path);
-  } catch (error) {
-    if (error instanceof NormalizationError)
-      throw error;
-    if (isModuleMissing(error)) {
-      throw new NormalizationError("listing_unavailable", `Listing this source requires a runtime with built-in SQLite (Node.js 22.5+ or Bun): ${String(moduleError instanceof Error ? moduleError.message : moduleError)}`);
-    }
-    throw sqliteOpenFailure(path, error);
-  }
-}
-function openWithWalFallback(open, path) {
-  let readOnlyError;
-  for (const readOnly of [true, false]) {
-    let handle;
-    try {
-      handle = open(readOnly);
-      handle.all("SELECT 1");
-      return handle;
-    } catch (error) {
-      try {
-        handle?.close();
-      } catch {}
-      if (readOnly) {
-        readOnlyError = error;
-        continue;
-      }
-      throw sqliteOpenFailure(path, readOnlyError ?? error);
-    }
-  }
-  throw sqliteOpenFailure(path, readOnlyError);
-}
-function sqliteOpenFailure(path, error) {
-  return new NormalizationError("invalid_input", `Could not open SQLite store ${JSON.stringify(path)}: ${error instanceof Error ? error.message : String(error)}`);
-}
-function isModuleMissing(error) {
-  if (error === null || typeof error !== "object")
-    return false;
-  const code = error.code;
-  const message = error.message;
-  return code === "ERR_MODULE_NOT_FOUND" || code === "MODULE_NOT_FOUND" || code === "ERR_UNKNOWN_BUILTIN_MODULE" || typeof message === "string" && /Cannot find (module|package)|No such built-in module/i.test(message);
-}
-
-// src/adapters/claude-code/list.ts
 var AGENT_PREFIX = "agent-";
 var JSONL_SUFFIX = ".jsonl";
 async function listClaudeCodeTrajectories(root) {

@@ -32,4 +32,4 @@ Cursor messages are stored as JSON blobs in the `blobs` table. The adapter extra
 
 ## Dependencies
 
-Requires `better-sqlite3` package for SQLite access.
+Uses runtime built-in SQLite (`node:sqlite` on Node.js 22.5+ or `bun:sqlite`).
