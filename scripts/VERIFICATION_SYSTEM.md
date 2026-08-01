@@ -5,22 +5,47 @@
 ## Quick Start
 
 ```bash
-# 1. Run full audit
-bash scripts/verify-all-claims.sh scripts/claims-ledger.json
+# 0. Runtime
+export PATH="$HOME/.bun/bin:$HOME/bin:$PATH"
 
-# 2. Add a claim to audit
+# 1. Extract claims from fleet docs that have none yet
+node scripts/extract-fleet-claims.mjs --write
+
+# 2. Run full audit (EXECUTES evidence — does not just reprint JSON status)
+bash scripts/verify-all-claims.sh scripts/claims-ledger.json --write
+# JSON summary:
+bash scripts/verify-all-claims.sh scripts/claims-ledger.json --json | jq .summary
+
+# 3. Add a claim to audit
 jq '.claims += [{
   "id": "new-claim-id",
   "claim": "what docs say",
   "doc_file": "path/to/file",
   "evidence_type": "git-commit|neo4j-query|filesystem-count|transcript-sessions",
   "evidence_source": "the query or git path",
+  "proof_method": "reproducible command",
   "status": "UNKNOWN"
 }]' scripts/claims-ledger.json > /tmp/ledger.json && mv /tmp/ledger.json scripts/claims-ledger.json
 
-# 3. Query evidence (if transcript-based)
+# 4. Query evidence (if transcript-based)
 node scripts/find-evidence.js "search pattern" 100
+
+# 5. Turn-end / single-session normalize
+node scripts/normalize-session.mjs --source pi --file ~/.pi/agent/sessions/.../session.jsonl --out /tmp/n.json
 ```
+
+### Executor contract (`verify-all-claims.mjs`)
+
+- Reads every claim in the ledger (invariant: `summary.total === claims.length > 0`).
+- Runs evidence by `evidence_type`:
+  - `neo4j-query` → `cypher-shell` (preferred) or HTTP with `NEO4J_PASSWORD`
+  - `git-commit` / `git-blame` → path existence under `~/projects` (+ git log timestamp when repo found)
+  - `filesystem-count` → `find | wc -l`
+  - `transcript-sessions` → `rg` over `~/.pi/agent/sessions`
+  - `running-system` → HTTP status probe
+- Corpus-count STALE only when the claim text asserts a **total** Neo4j/axioms.json population that disagrees with live `count(a)`.
+- `--write` updates `status`, `actual_value`, `evidence_timestamp`, `last_verified_at`.
+- Exit `1` if any claim is STALE; exit `0` otherwise.
 
 ## How It Works
 

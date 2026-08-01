@@ -19,9 +19,15 @@ Comprehensive audit launched 2026-07-25. Goals: 100% documentation proof coverag
 - **claims-ledger.json** — Master ledger of extracted claims with status (VERIFIED/STALE/QUESTIONABLE/UNKNOWN)
 - **claims-ledger-refined.json** — v2.0 refined ledger using multi-sentence boundaries (55 claims, 18% verified)
 - **gaps-ledger.json** — Identified undocumented capabilities (15 gaps: 9 P0, 5 P1, 1 P2)
-- **verify-all-claims.sh** — Bash runner: for each claim, execute evidence query, update status
+- **verify-all-claims.sh** / **verify-all-claims.mjs** — Executor: runs evidence commands (Neo4j/cypher-shell, path checks, filesystem counts, transcript rg) and updates status. Exit 1 if any STALE. Never reports Total claims: 0 when the ledger is non-empty.
+- **extract-fleet-claims.mjs** — Inventory fleet AGENTS/CONTEXT/DESIGN docs with zero ledger coverage; extract multi-sentence claims; attach `proof_method` + `axiom_links`.
+- **normalize-session.mjs** — Normalize one session file (turn-end / observe path). Writes compact receipt + optional full body.
 - **find-evidence.js** — Search transcripts for evidence patterns, return matching sessions with confidence
 - **VERIFICATION_SYSTEM.md** — Complete documentation of verification framework, extraction workflow, evidence types
+
+### Turn-end normalize wire
+
+Project extension `.pi/extensions/trajectory-turnend-normalize.ts` listens for Pi `turn_end`, reads `ctx.sessionManager.getSessionFile()`, and runs `scripts/normalize-session.mjs` into `~/.local/share/trajectory/turnend/`. Observe-only; failures never block the agent.
 
 ### Verification System
 
@@ -59,13 +65,24 @@ Result: 2231 (mismatch)
 Status: STALE → Fixed in bridge/AGENTS.md:198, orbit/AGENTS.md:189
 ```
 
-## Current Audit Status (2026-07-25)
+## Current Audit Status (2026-08-01 pipeline)
 
-**Phase 1 (Verification): In Progress**
-- 55 refined claims extracted (from 81 fragments)
-- 8 verified (bridge M4, M3, invariants, axioms categories, Neo4j)
-- 2 stale (axiom count, FIXED)
-- 45 queued for verification via spawn tickets (101-104, 001-009)
+**Prove commands**
+```bash
+export PATH="$HOME/.bun/bin:$HOME/bin:$PATH"   # bun install path
+bun --version                                  # expect 1.3.x
+bun test                                       # full suite incl. claims-verify
+bash scripts/verify-all-claims.sh scripts/claims-ledger.json --json | jq .summary
+node scripts/extract-fleet-claims.mjs --json | jq .report
+node scripts/normalize-session.mjs --source pi --file "$PI_SESSION_JSONL" --out /tmp/n.json
+```
+
+**Phase 1 (Verification): Executor live**
+- Fleet extraction + verification ran 2026-08-01 via `extract-fleet-claims.mjs` + `verify-all-claims.mjs`
+- Ledger grew from 82 → 332 claims (250 new from 38 previously uncovered fleet docs)
+- Live summary after executor write-back (re-run to refresh): see `claims-ledger.json` → `last_verification.summary`
+- Corpus count STALE when docs cite 1196/2183/2231 axioms; live Neo4j `MATCH (a:Axiom) RETURN count(a)` = 2178
+- Prior refined snapshot (55 claims / 18% verified) retained in `claims-ledger-refined.json` for history only
 
 **Phase 2 (Gap Analysis): Complete**
 - 15 gaps identified across all projects
