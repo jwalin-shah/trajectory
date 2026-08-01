@@ -1,0 +1,154 @@
+{
+  "version": "1.0",
+  "date": "2026-07-25T19:13:01.106Z",
+  "total_gaps": 15,
+  "gaps_by_project": {
+    "bridge": {
+      "P0": 3,
+      "P1": 2,
+      "P2": 0
+    },
+    "axioms": {
+      "P0": 2,
+      "P1": 1,
+      "P2": 0
+    },
+    "orbit": {
+      "P0": 3,
+      "P1": 0,
+      "P2": 0
+    },
+    "portfolio": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 1
+    },
+    "trajectory": {
+      "P0": 1,
+      "P1": 1,
+      "P2": 0
+    }
+  },
+  "gaps": [
+    {
+      "project": "bridge",
+      "gap": "internal/context: context fan-out & assembly (Neo4j, rg, tldr, githits parallel fetch)",
+      "evidence_code": "internal/context/*.go (5 files)",
+      "proof_method": "Code review: internal/context/assemble.go shows parallel channel-based fetching",
+      "priority": "P0",
+      "documented_in": "AGENTS.md:line 32-34 (brief mention), needs deep explanation"
+    },
+    {
+      "project": "bridge",
+      "gap": "internal/create: RRF (Reciprocal Rank Fusion) scoring algorithm for context ranking",
+      "evidence_code": "internal/create/assemble.go has scoring logic",
+      "proof_method": "Git search: rg \"RRF\" bridge/internal/create/",
+      "priority": "P0",
+      "documented_in": "Not documented in AGENTS.md"
+    },
+    {
+      "project": "bridge",
+      "gap": "internal/spawn: Worktree isolation via pure Go git worktree (no treehouse dependency)",
+      "evidence_code": "internal/worktree/*.go",
+      "proof_method": "Code exists, git log shows worktree refactor",
+      "priority": "P1",
+      "documented_in": "AGENTS.md:line 37 (mentioned but not explained)"
+    },
+    {
+      "project": "bridge",
+      "gap": "internal/manifest: Evidence chain types (Assertion, WorkerManifest, VerifiedClaim)",
+      "evidence_code": "internal/manifest/*.go defines types",
+      "proof_method": "Code review: struct definitions",
+      "priority": "P0",
+      "documented_in": "AGENTS.md:line 35 (mentioned only)"
+    },
+    {
+      "project": "bridge",
+      "gap": "28 property-based gopter checkers (invariants.go)",
+      "evidence_code": "internal/create/invariants.go",
+      "proof_method": "File exists, 28 invariants defined",
+      "priority": "P1",
+      "documented_in": "AGENTS.md mentions \"28 property-based checkers\" but no explanation"
+    },
+    {
+      "project": "axioms",
+      "gap": "axioms.json structure: filtering by category, validation schema",
+      "evidence_code": "axioms.json (2231 axioms)",
+      "proof_method": "jq queries: categories, count per category, validation rules",
+      "priority": "P0",
+      "documented_in": "Not documented. AGENTS.md lists categories but not filtering logic"
+    },
+    {
+      "project": "axioms",
+      "gap": "Axiom ingest pipeline: axiom-ingestor command extraction from probe runs",
+      "evidence_code": "axiom-ingestor binary + cmd/",
+      "proof_method": "Check axioms/AGENTS.md: mentions axiom-ingestor but not full workflow",
+      "priority": "P1",
+      "documented_in": "AGENTS.md:axiom-ingestor section (incomplete)"
+    },
+    {
+      "project": "axioms",
+      "gap": "Bridge-orbit audit workflow: 117 axiom filtering, 17 categories, findings #7-#9",
+      "evidence_code": "bridge-orbit-audit results",
+      "proof_method": "Bridge AGENTS.md references audit but full methodology not documented",
+      "priority": "P0",
+      "documented_in": "Mentioned in bridge/AGENTS.md but axioms/AGENTS.md incomplete"
+    },
+    {
+      "project": "orbit",
+      "gap": "15+ cmd/* tools (ast-extract, codebase-graph, dispatch, verify-v3, etc.) not documented",
+      "evidence_code": "orbit/cmd/* directories",
+      "proof_method": "ls orbit/cmd/ shows 15+ binaries, AGENTS.md mentions only 3-4",
+      "priority": "P0",
+      "documented_in": "AGENTS.md:line 60+ (incomplete, missing 12 tools)"
+    },
+    {
+      "project": "orbit",
+      "gap": "internal/grind: Pipeline for running verification checks against code",
+      "evidence_code": "internal/grind*.go files",
+      "proof_method": "Code review: grind pipeline implementation",
+      "priority": "P0",
+      "documented_in": "Not in AGENTS.md"
+    },
+    {
+      "project": "orbit",
+      "gap": "Tokenrouter invariants: per-second request cap, cooldown, lazy expiry (∀k,t: RequestBuckets[k][t] ≤ RPM/60)",
+      "evidence_code": "orbit/pkg/tokenrouter/invariants.md + code",
+      "proof_method": "Code implements 3 invariants with TestAX* gates",
+      "priority": "P0",
+      "documented_in": "CLAUDE.md mentions but AGENTS.md lacks full tensor equations"
+    },
+    {
+      "project": "portfolio",
+      "gap": "10 Wayfinder maps: structure, ownership, routing policy not documented",
+      "evidence_code": "portfolio/wayfinder/*/map.md (10 maps)",
+      "proof_method": "Count: find portfolio/wayfinder -name \"map.md\" | wc -l",
+      "priority": "P1",
+      "documented_in": "AGENTS.md mentions wayfinder but not its structure"
+    },
+    {
+      "project": "portfolio",
+      "gap": "Portfolio registry: no structured format defined (JSON vs YAML vs Markdown)",
+      "evidence_code": "portfolio/registry/ (empty)",
+      "proof_method": "Design decision: why registry is empty",
+      "priority": "P2",
+      "documented_in": "AGENTS.md mentions \"empty, reserved for future registry\""
+    },
+    {
+      "project": "trajectory",
+      "gap": "10 verification scripts: purpose, inputs, outputs not individually documented",
+      "evidence_code": "trajectory/scripts/*.{js,sh}",
+      "proof_method": "Inventory: each script with docstring coverage",
+      "priority": "P1",
+      "documented_in": "VERIFICATION_SYSTEM.md covers high-level, not individual scripts"
+    },
+    {
+      "project": "trajectory",
+      "gap": "Transcript normalization pipeline: enrich-all.js, load-to-neo4j.js workflow",
+      "evidence_code": "trajectory/scripts/enrich-all.js + load-to-neo4j.js",
+      "proof_method": "Code review: data pipeline steps",
+      "priority": "P0",
+      "documented_in": "Not documented anywhere"
+    }
+  ]
+}

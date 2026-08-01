@@ -1,0 +1,12 @@
+{
+  "title": "Audit 002: Portfolio + Axioms + Wayfinder Maps",
+  "description": "Extract claims from portfolio/axioms AGENTS.md/CLAUDE.md and all 12 wayfinder maps. Link to evidence sources (git, Neo4j queries). Add to claims-ledger.json",
+  "allowed_paths": ["projects/portfolio/", "projects/axioms/", "projects/trajectory/scripts/"],
+  "proof_method": "verification_system",
+  "acceptance": [
+    "≥30 total claims from portfolio + axioms + maps",
+    "≥3 wayfinder claims per map (36+ map claims)",
+    "All have evidence_source",
+    "JSON valid"
+  ]
+}

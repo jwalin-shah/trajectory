@@ -1,4 +1,3 @@
-import Database from "better-sqlite3";
 import type {
   DecodedEvent,
   DecodedSession,
@@ -6,6 +5,7 @@ import type {
   SessionContext,
 } from "../../internal.js";
 import type { Diagnostic } from "../../types.js";
+import { openSqliteReadOnlySync } from "../listing-shared.js";
 import { parseTimestamp } from "../shared.js";
 
 export const agyAdapter: SourceAdapter = {
@@ -18,10 +18,9 @@ export const agyAdapter: SourceAdapter = {
 
     try {
       // input is the path to a .db file in ~/.gemini/antigravity-cli/conversations/
-      const db = new Database(input, { readonly: true });
+      const db = openSqliteReadOnlySync(input);
 
       try {
-        // Query agy's message tables
         let messages: Array<{
           id?: string | number;
           content?: string;
@@ -29,47 +28,46 @@ export const agyAdapter: SourceAdapter = {
           timestamp?: string | number;
           created_at?: string | number;
           text?: string;
+          message?: string;
+          body?: string;
         }> = [];
 
-        // Get all tables
-        const tables = db
-          .prepare("SELECT name FROM sqlite_master WHERE type='table'")
-          .all() as Array<{ name: string }>;
+        const tables = db.all(
+          "SELECT name FROM sqlite_master WHERE type='table'",
+        ) as Array<{ name: string }>;
         const tableNames = tables.map((t) => t.name);
 
-        // Agy typically stores messages in a 'messages' or 'history' table
         const messageTable = tableNames.find(
           (t) =>
             t.toLowerCase() === "messages" ||
             t.toLowerCase() === "history" ||
             t.toLowerCase() === "conversation" ||
-            t.toLowerCase().includes("message")
+            t.toLowerCase().includes("message"),
         );
 
         if (messageTable) {
-          // Get schema
-          const schema = db
-            .prepare(`PRAGMA table_info(${messageTable})`)
-            .all() as Array<{ name: string; type: string }>;
+          const schema = db.all(`PRAGMA table_info(${messageTable})`) as Array<{
+            name: string;
+            type: string;
+          }>;
           const columnNames = schema.map((c) => c.name);
 
-          // Find relevant columns
           const roleCol = columnNames.find(
-            (c) => c.toLowerCase() === "role" || c.toLowerCase() === "author"
+            (c) => c.toLowerCase() === "role" || c.toLowerCase() === "author",
           );
           const contentCol = columnNames.find(
             (c) =>
               c.toLowerCase() === "content" ||
               c.toLowerCase() === "text" ||
               c.toLowerCase() === "message" ||
-              c.toLowerCase() === "body"
+              c.toLowerCase() === "body",
           );
           const timestampCol = columnNames.find(
             (c) =>
               c.toLowerCase() === "timestamp" ||
               c.toLowerCase() === "created_at" ||
               c.toLowerCase() === "date" ||
-              c.toLowerCase() === "time"
+              c.toLowerCase() === "time",
           );
 
           if (contentCol && roleCol) {
@@ -78,20 +76,14 @@ export const agyAdapter: SourceAdapter = {
             if (columnNames.includes("id")) cols.unshift("id");
 
             const query = `SELECT ${cols.join(", ")} FROM ${messageTable} ORDER BY rowid`;
-            messages = db.prepare(query).all() as typeof messages;
+            messages = db.all(query) as typeof messages;
           }
         }
 
-        // Convert to events
         for (const msg of messages) {
-          const role = msg.role as string | undefined;
-          const content = (msg.content ||
-            msg.text ||
-            (msg as any).message ||
-            (msg as any).body) as string | undefined;
-          const ts = parseTimestamp(
-            msg.timestamp || msg.created_at || undefined
-          );
+          const role = msg.role;
+          const content = msg.content || msg.text || msg.message || msg.body;
+          const ts = parseTimestamp(msg.timestamp || msg.created_at || undefined);
 
           if (
             role &&
@@ -101,14 +93,14 @@ export const agyAdapter: SourceAdapter = {
               role === "model" ||
               role === "human")
           ) {
-            // Normalize role names
-            const normalizedRole = role === "model" || role === "assistant" ? "assistant" : "user";
+            const normalizedRole =
+              role === "model" || role === "assistant" ? "assistant" : "user";
             const event: DecodedEvent = {
               type: "message",
-              role: normalizedRole as "user" | "assistant",
+              role: normalizedRole,
               content,
               ...(ts ? { timestamp: ts } : {}),
-              ...(msg.id ? { sourceRecordId: String(msg.id) } : {}),
+              ...(msg.id !== undefined ? { sourceRecordId: String(msg.id) } : {}),
             };
             events.push(event);
           }

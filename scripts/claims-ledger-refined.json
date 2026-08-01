@@ -1,0 +1,78 @@
+{
+  "version": "2.0-refined",
+  "extraction_date": "2026-07-25",
+  "extraction_method": "multi-sentence-boundary (complete, verifiable assertions)",
+  "prior_methodology": "sentence-fragment extraction (81 fragments, 85% unverifiable)",
+  "improvement": "refined to 55 complete assertions with full context",
+  "summary": {
+    "total_claims": 55,
+    "verified": 8,
+    "stale": 2,
+    "questionable": 0,
+    "unknown": 45,
+    "coverage_percent": 18.2
+  },
+  "documents": [
+    {
+      "name": "bridge/AGENTS.md",
+      "verified_claims": 6,
+      "verified": [
+        "M4 create pipeline proven end-to-end with language detection, scaffold injection, atomization",
+        "M3 closed 2026-07-11, all 11 items shipped",
+        "77 invariants cataloged, 52 checked/proved, 8 Z3 proof files",
+        "5 TLA+ models (1.58M states), Lean 4 proofs built",
+        "internal/create implements M4 create pipeline state machine",
+        "docs/INVARIANT_CATALOG.md — 77 invariants across Create, Spawn, History, Transition, Cross-Cutting"
+      ]
+    },
+    {
+      "name": "axioms/AGENTS.md",
+      "verified_claims": 2,
+      "verified": [
+        "Axiom corpus with Saltzer-Schroeder, software-correctness, software-testing, architecture, sandbox, safety, provenance categories",
+        "Neo4j knowledge engine at neo4j://localhost:7687"
+      ]
+    },
+    {
+      "name": "bridge/CLAUDE.md",
+      "verified_claims": 0,
+      "notes": "Mirrors bridge/AGENTS.md (symlinked)"
+    },
+    {
+      "name": "portfolio/AGENTS.md",
+      "verified_claims": 0,
+      "notes": "Requires deep cross-project state tracking"
+    },
+    {
+      "name": "~/.claude-a/CLAUDE.md",
+      "verified_claims": 0,
+      "notes": "Principles/directives (prescriptive, not empirical claims)"
+    }
+  ],
+  "stale_claims_fixed": [
+    {
+      "claim": "1196 axioms in Neo4j",
+      "fix": "Updated to 2231 (verified 2026-07-25)",
+      "files_fixed": [
+        "bridge/AGENTS.md:198",
+        "bridge/CLAUDE.md:198",
+        "orbit/AGENTS.md:189",
+        "orbit/CLAUDE.md:189"
+      ]
+    }
+  ],
+  "key_findings": [
+    "Bridge M4 create pipeline: 6 core claims VERIFIED against artifacts",
+    "Axioms corpus: 2 core claims VERIFIED (Saltzer-Schroeder categories, Neo4j endpoint)",
+    "All proof artifacts exist (TLA+ 28 files, Z3 8 files, INVARIANT_CATALOG.md)",
+    "Original extraction (81 claims) had 69 unverifiable sentence fragments",
+    "Refined extraction (55 claims) has 8 VERIFIED, 2 STALE (fixed), 45 requiring deeper audit",
+    "Axiom count discrepancy fixed: 1196 → 2231"
+  ],
+  "methodology_notes": [
+    "Extracted multi-sentence boundaries instead of sentence fragments",
+    "Each claim now includes full context (2-4 sentences minimum)",
+    "Classification: if claim cannot be independently verified from source artifacts, marked UNKNOWN with reason",
+    "P0 claims (bridge, axioms) manually audited against filesystem, git history, Neo4j"
+  ]
+}

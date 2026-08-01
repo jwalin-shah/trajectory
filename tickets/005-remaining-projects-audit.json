@@ -1,0 +1,11 @@
+{
+  "title": "Audit 005: Remaining Projects AGENTS.md",
+  "description": "Extract ≥1 claim per project from all remaining AGENTS.md files. Add to claims-ledger.json",
+  "allowed_paths": ["projects/", "projects/trajectory/scripts/"],
+  "proof_method": "verification_system",
+  "acceptance": [
+    "≥50 total claims from all projects",
+    "All have evidence_source + doc_location",
+    "JSON valid"
+  ]
+}

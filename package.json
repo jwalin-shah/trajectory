@@ -37,21 +37,20 @@
     "build": "tsc -p tsconfig.build.json",
     "build:python-cli": "bun build ./src/python-cli.ts --target=node --format=esm --outfile=python/src/trajectory/_vendor/trajectory-cli.mjs && cp helpers/deepagents_checkpoint.py python/src/trajectory/_vendor/deepagents_checkpoint.py",
     "audit:versions": "bun scripts/audit-source-versions.ts",
+    "claims:extract": "node scripts/extract-fleet-claims.mjs",
+    "claims:verify": "node scripts/verify-all-claims.mjs",
+    "normalize:session": "node scripts/normalize-session.mjs",
     "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json",
     "test": "bun test",
     "check": "bun run build:python-cli && git diff --exit-code -- python/src/trajectory/_vendor/trajectory-cli.mjs python/src/trajectory/_vendor/deepagents_checkpoint.py && bun run typecheck && bun test && bun run build"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "^1.3.0",
     "ajv": "^8.17.1",
     "typescript": "^5.9.0"
   },
   "engines": {
-    "node": ">=20"
-  },
-  "dependencies": {
-    "better-sqlite3": "^13.0.1"
+    "node": ">=22"
   }
 }
