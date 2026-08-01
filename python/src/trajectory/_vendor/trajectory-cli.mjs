@@ -1,3 +1,732 @@
+import { createRequire } from "node:module";
+var __create = Object.create;
+var __getProtoOf = Object.getPrototypeOf;
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+function __accessProp(key) {
+  return this[key];
+}
+var __toESMCache_node;
+var __toESMCache_esm;
+var __toESM = (mod, isNodeMode, target) => {
+  var canCache = mod != null && typeof mod === "object";
+  if (canCache) {
+    var cache = isNodeMode ? __toESMCache_node ??= new WeakMap : __toESMCache_esm ??= new WeakMap;
+    var cached = cache.get(mod);
+    if (cached)
+      return cached;
+  }
+  target = mod != null ? __create(__getProtoOf(mod)) : {};
+  const to = isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target;
+  for (let key of __getOwnPropNames(mod))
+    if (!__hasOwnProp.call(to, key))
+      __defProp(to, key, {
+        get: __accessProp.bind(mod, key),
+        enumerable: true
+      });
+  if (canCache)
+    cache.set(mod, to);
+  return to;
+};
+var __commonJS = (cb, mod) => () => (mod || cb((mod = { exports: {} }).exports, mod), mod.exports);
+var __require = /* @__PURE__ */ createRequire(import.meta.url);
+
+// node_modules/better-sqlite3/lib/util.js
+var require_util = __commonJS((exports) => {
+  exports.getBooleanOption = (options, key) => {
+    let value = false;
+    if (key in options && typeof (value = options[key]) !== "boolean") {
+      throw new TypeError(`Expected the "${key}" option to be a boolean`);
+    }
+    return value;
+  };
+  exports.cppdb = Symbol();
+  exports.inspect = Symbol.for("nodejs.util.inspect.custom");
+});
+
+// node_modules/better-sqlite3/lib/sqlite-error.js
+var require_sqlite_error = __commonJS((exports, module) => {
+  class SqliteError extends Error {
+    constructor(message, code) {
+      if (typeof code !== "string") {
+        throw new TypeError("Expected second argument to be a string");
+      }
+      super("" + message);
+      this.code = code;
+      if (typeof Error.captureStackTrace === "function") {
+        Error.captureStackTrace(this, SqliteError);
+      }
+    }
+  }
+  Object.defineProperty(SqliteError.prototype, "name", {
+    value: "SqliteError",
+    writable: true,
+    enumerable: false,
+    configurable: true
+  });
+  module.exports = SqliteError;
+});
+
+// node_modules/better-sqlite3/lib/methods/wrappers.js
+var require_wrappers = __commonJS((exports) => {
+  var { cppdb } = require_util();
+  exports.prepare = function prepare(sql) {
+    return this[cppdb].prepare(sql, this, false, false);
+  };
+  exports.exec = function exec(sql) {
+    this[cppdb].exec(sql);
+    return this;
+  };
+  exports.close = function close() {
+    this[cppdb].close();
+    return this;
+  };
+  exports.loadExtension = function loadExtension(...args) {
+    this[cppdb].loadExtension(...args);
+    return this;
+  };
+  exports.defaultSafeIntegers = function defaultSafeIntegers(...args) {
+    this[cppdb].defaultSafeIntegers(...args);
+    return this;
+  };
+  exports.unsafeMode = function unsafeMode(...args) {
+    this[cppdb].unsafeMode(...args);
+    return this;
+  };
+  exports.getters = {
+    name: {
+      get: function name() {
+        return this[cppdb].name;
+      },
+      enumerable: true
+    },
+    open: {
+      get: function open() {
+        return this[cppdb].open;
+      },
+      enumerable: true
+    },
+    inTransaction: {
+      get: function inTransaction() {
+        return this[cppdb].inTransaction;
+      },
+      enumerable: true
+    },
+    readonly: {
+      get: function readonly() {
+        return this[cppdb].readonly;
+      },
+      enumerable: true
+    },
+    memory: {
+      get: function memory() {
+        return this[cppdb].memory;
+      },
+      enumerable: true
+    }
+  };
+});
+
+// node_modules/better-sqlite3/lib/methods/transaction.js
+var require_transaction = __commonJS((exports, module) => {
+  var { cppdb } = require_util();
+  var controllers = new WeakMap;
+  module.exports = function transaction(fn) {
+    if (typeof fn !== "function")
+      throw new TypeError("Expected first argument to be a function");
+    const db = this[cppdb];
+    const controller = getController(db, this);
+    const { apply } = Function.prototype;
+    const properties = {
+      default: { value: wrapTransaction(apply, fn, db, controller.default) },
+      deferred: { value: wrapTransaction(apply, fn, db, controller.deferred) },
+      immediate: { value: wrapTransaction(apply, fn, db, controller.immediate) },
+      exclusive: { value: wrapTransaction(apply, fn, db, controller.exclusive) },
+      database: { value: this, enumerable: true }
+    };
+    Object.defineProperties(properties.default.value, properties);
+    Object.defineProperties(properties.deferred.value, properties);
+    Object.defineProperties(properties.immediate.value, properties);
+    Object.defineProperties(properties.exclusive.value, properties);
+    return properties.default.value;
+  };
+  var getController = (db, self) => {
+    let controller = controllers.get(db);
+    if (!controller) {
+      const shared = {
+        commit: db.prepare("COMMIT", self, false, false),
+        rollback: db.prepare("ROLLBACK", self, false, false),
+        savepoint: db.prepare("SAVEPOINT `\t_bs3.\t`", self, false, false),
+        release: db.prepare("RELEASE `\t_bs3.\t`", self, false, false),
+        rollbackTo: db.prepare("ROLLBACK TO `\t_bs3.\t`", self, false, false)
+      };
+      controllers.set(db, controller = {
+        default: Object.assign({ begin: db.prepare("BEGIN", self, false, false) }, shared),
+        deferred: Object.assign({ begin: db.prepare("BEGIN DEFERRED", self, false, false) }, shared),
+        immediate: Object.assign({ begin: db.prepare("BEGIN IMMEDIATE", self, false, false) }, shared),
+        exclusive: Object.assign({ begin: db.prepare("BEGIN EXCLUSIVE", self, false, false) }, shared)
+      });
+    }
+    return controller;
+  };
+  var wrapTransaction = (apply, fn, db, { begin, commit, rollback, savepoint, release, rollbackTo }) => function sqliteTransaction() {
+    let before, after, undo;
+    if (db.inTransaction) {
+      before = savepoint;
+      after = release;
+      undo = rollbackTo;
+    } else {
+      before = begin;
+      after = commit;
+      undo = rollback;
+    }
+    before.run();
+    try {
+      const result = apply.call(fn, this, arguments);
+      if (result && typeof result.then === "function") {
+        throw new TypeError("Transaction function cannot return a promise");
+      }
+      after.run();
+      return result;
+    } catch (ex) {
+      if (db.inTransaction) {
+        undo.run();
+        if (undo !== rollback)
+          after.run();
+      }
+      throw ex;
+    }
+  };
+});
+
+// node_modules/better-sqlite3/lib/methods/pragma.js
+var require_pragma = __commonJS((exports, module) => {
+  var { getBooleanOption, cppdb } = require_util();
+  module.exports = function pragma(source, options) {
+    if (options == null)
+      options = {};
+    if (typeof source !== "string")
+      throw new TypeError("Expected first argument to be a string");
+    if (typeof options !== "object")
+      throw new TypeError("Expected second argument to be an options object");
+    const simple = getBooleanOption(options, "simple");
+    const stmt = this[cppdb].prepare(`PRAGMA ${source}`, this, true, false);
+    return simple ? stmt.pluck().get() : stmt.all();
+  };
+});
+
+// node_modules/better-sqlite3/lib/methods/explain.js
+var require_explain = __commonJS((exports, module) => {
+  var { cppdb } = require_util();
+  module.exports = function explain(source) {
+    if (typeof source !== "string")
+      throw new TypeError("Expected first argument to be a string");
+    const stmt = this[cppdb].prepare(`EXPLAIN ${source}`, this, false, true);
+    return stmt.all();
+  };
+});
+
+// node_modules/better-sqlite3/lib/methods/backup.js
+var require_backup = __commonJS((exports, module) => {
+  var fs = __require("fs");
+  var path = __require("path");
+  var { promisify } = __require("util");
+  var { cppdb } = require_util();
+  var fsAccess = promisify(fs.access);
+  module.exports = async function backup(filename, options) {
+    if (options == null)
+      options = {};
+    if (typeof filename !== "string")
+      throw new TypeError("Expected first argument to be a string");
+    if (typeof options !== "object")
+      throw new TypeError("Expected second argument to be an options object");
+    filename = filename.trim();
+    const attachedName = "attached" in options ? options.attached : "main";
+    const handler = "progress" in options ? options.progress : null;
+    if (!filename)
+      throw new TypeError("Backup filename cannot be an empty string");
+    if (filename === ":memory:")
+      throw new TypeError('Invalid backup filename ":memory:"');
+    if (typeof attachedName !== "string")
+      throw new TypeError('Expected the "attached" option to be a string');
+    if (!attachedName)
+      throw new TypeError('The "attached" option cannot be an empty string');
+    if (handler != null && typeof handler !== "function")
+      throw new TypeError('Expected the "progress" option to be a function');
+    await fsAccess(path.dirname(filename)).catch(() => {
+      throw new TypeError("Cannot save backup because the directory does not exist");
+    });
+    const isNewFile = await fsAccess(filename).then(() => false, () => true);
+    return runBackup(this[cppdb].backup(this, attachedName, filename, isNewFile), handler || null);
+  };
+  var runBackup = (backup, handler) => {
+    let rate = 0;
+    let useDefault = true;
+    return new Promise((resolve, reject) => {
+      setImmediate(function step() {
+        try {
+          const progress = backup.transfer(rate);
+          if (!progress.remainingPages) {
+            backup.close();
+            resolve(progress);
+            return;
+          }
+          if (useDefault) {
+            useDefault = false;
+            rate = 100;
+          }
+          if (handler) {
+            const ret = handler(progress);
+            if (ret !== undefined) {
+              if (typeof ret === "number" && ret === ret)
+                rate = Math.max(0, Math.min(2147483647, Math.round(ret)));
+              else
+                throw new TypeError("Expected progress callback to return a number or undefined");
+            }
+          }
+          setImmediate(step);
+        } catch (err) {
+          backup.close();
+          reject(err);
+        }
+      });
+    });
+  };
+});
+
+// node_modules/better-sqlite3/lib/methods/serialize.js
+var require_serialize = __commonJS((exports, module) => {
+  var { cppdb } = require_util();
+  module.exports = function serialize(options) {
+    if (options == null)
+      options = {};
+    if (typeof options !== "object")
+      throw new TypeError("Expected first argument to be an options object");
+    const attachedName = "attached" in options ? options.attached : "main";
+    if (typeof attachedName !== "string")
+      throw new TypeError('Expected the "attached" option to be a string');
+    if (!attachedName)
+      throw new TypeError('The "attached" option cannot be an empty string');
+    return this[cppdb].serialize(attachedName);
+  };
+});
+
+// node_modules/better-sqlite3/lib/methods/function.js
+var require_function = __commonJS((exports, module) => {
+  var { getBooleanOption, cppdb } = require_util();
+  module.exports = function defineFunction(name, options, fn) {
+    if (options == null)
+      options = {};
+    if (typeof options === "function") {
+      fn = options;
+      options = {};
+    }
+    if (typeof name !== "string")
+      throw new TypeError("Expected first argument to be a string");
+    if (typeof fn !== "function")
+      throw new TypeError("Expected last argument to be a function");
+    if (typeof options !== "object")
+      throw new TypeError("Expected second argument to be an options object");
+    if (!name)
+      throw new TypeError("User-defined function name cannot be an empty string");
+    const safeIntegers = "safeIntegers" in options ? +getBooleanOption(options, "safeIntegers") : 2;
+    const deterministic = getBooleanOption(options, "deterministic");
+    const directOnly = getBooleanOption(options, "directOnly");
+    const varargs = getBooleanOption(options, "varargs");
+    let argCount = -1;
+    if (!varargs) {
+      argCount = fn.length;
+      if (!Number.isInteger(argCount) || argCount < 0)
+        throw new TypeError("Expected function.length to be a positive integer");
+      if (argCount > 100)
+        throw new RangeError("User-defined functions cannot have more than 100 arguments");
+    }
+    this[cppdb].function(fn, name, argCount, safeIntegers, deterministic, directOnly);
+    return this;
+  };
+});
+
+// node_modules/better-sqlite3/lib/methods/aggregate.js
+var require_aggregate = __commonJS((exports, module) => {
+  var { getBooleanOption, cppdb } = require_util();
+  module.exports = function defineAggregate(name, options) {
+    if (typeof name !== "string")
+      throw new TypeError("Expected first argument to be a string");
+    if (typeof options !== "object" || options === null)
+      throw new TypeError("Expected second argument to be an options object");
+    if (!name)
+      throw new TypeError("User-defined function name cannot be an empty string");
+    const start = "start" in options ? options.start : null;
+    const step = getFunctionOption(options, "step", true);
+    const inverse = getFunctionOption(options, "inverse", false);
+    const result = getFunctionOption(options, "result", false);
+    const safeIntegers = "safeIntegers" in options ? +getBooleanOption(options, "safeIntegers") : 2;
+    const deterministic = getBooleanOption(options, "deterministic");
+    const directOnly = getBooleanOption(options, "directOnly");
+    const varargs = getBooleanOption(options, "varargs");
+    let argCount = -1;
+    if (!varargs) {
+      argCount = Math.max(getLength(step), inverse ? getLength(inverse) : 0);
+      if (argCount > 0)
+        argCount -= 1;
+      if (argCount > 100)
+        throw new RangeError("User-defined functions cannot have more than 100 arguments");
+    }
+    this[cppdb].aggregate(start, step, inverse, result, name, argCount, safeIntegers, deterministic, directOnly);
+    return this;
+  };
+  var getFunctionOption = (options, key, required) => {
+    const value = key in options ? options[key] : null;
+    if (typeof value === "function")
+      return value;
+    if (value != null)
+      throw new TypeError(`Expected the "${key}" option to be a function`);
+    if (required)
+      throw new TypeError(`Missing required option "${key}"`);
+    return null;
+  };
+  var getLength = ({ length }) => {
+    if (Number.isInteger(length) && length >= 0)
+      return length;
+    throw new TypeError("Expected function.length to be a positive integer");
+  };
+});
+
+// node_modules/better-sqlite3/lib/methods/table.js
+var require_table = __commonJS((exports, module) => {
+  var { cppdb } = require_util();
+  module.exports = function defineTable(name, factory) {
+    if (typeof name !== "string")
+      throw new TypeError("Expected first argument to be a string");
+    if (!name)
+      throw new TypeError("Virtual table module name cannot be an empty string");
+    let eponymous = false;
+    if (typeof factory === "object" && factory !== null) {
+      eponymous = true;
+      factory = defer(parseTableDefinition(factory, "used", name));
+    } else {
+      if (typeof factory !== "function")
+        throw new TypeError("Expected second argument to be a function or a table definition object");
+      factory = wrapFactory(factory);
+    }
+    this[cppdb].table(factory, name, eponymous);
+    return this;
+  };
+  function wrapFactory(factory) {
+    return function virtualTableFactory(moduleName, databaseName, tableName, ...args) {
+      const thisObject = {
+        module: moduleName,
+        database: databaseName,
+        table: tableName
+      };
+      const def = apply.call(factory, thisObject, args);
+      if (typeof def !== "object" || def === null) {
+        throw new TypeError(`Virtual table module "${moduleName}" did not return a table definition object`);
+      }
+      return parseTableDefinition(def, "returned", moduleName);
+    };
+  }
+  function parseTableDefinition(def, verb, moduleName) {
+    if (!hasOwnProperty.call(def, "rows")) {
+      throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition without a "rows" property`);
+    }
+    if (!hasOwnProperty.call(def, "columns")) {
+      throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition without a "columns" property`);
+    }
+    const rows = def.rows;
+    if (typeof rows !== "function" || Object.getPrototypeOf(rows) !== GeneratorFunctionPrototype) {
+      throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with an invalid "rows" property (should be a generator function)`);
+    }
+    let columns = def.columns;
+    if (!Array.isArray(columns) || !isStringArray(columns = [...columns])) {
+      throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with an invalid "columns" property (should be an array of strings)`);
+    }
+    if (columns.length !== new Set(columns).size) {
+      throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with duplicate column names`);
+    }
+    if (!columns.length) {
+      throw new RangeError(`Virtual table module "${moduleName}" ${verb} a table definition with zero columns`);
+    }
+    let parameters;
+    if (hasOwnProperty.call(def, "parameters")) {
+      parameters = def.parameters;
+      if (!Array.isArray(parameters) || !isStringArray(parameters = [...parameters])) {
+        throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with an invalid "parameters" property (should be an array of strings)`);
+      }
+    } else {
+      parameters = inferParameters(rows);
+    }
+    if (parameters.length !== new Set(parameters).size) {
+      throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with duplicate parameter names`);
+    }
+    if (parameters.length > 32) {
+      throw new RangeError(`Virtual table module "${moduleName}" ${verb} a table definition with more than the maximum number of 32 parameters`);
+    }
+    for (const parameter of parameters) {
+      if (columns.includes(parameter)) {
+        throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with column "${parameter}" which was ambiguously defined as both a column and parameter`);
+      }
+    }
+    let safeIntegers = 2;
+    if (hasOwnProperty.call(def, "safeIntegers")) {
+      const bool = def.safeIntegers;
+      if (typeof bool !== "boolean") {
+        throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with an invalid "safeIntegers" property (should be a boolean)`);
+      }
+      safeIntegers = +bool;
+    }
+    let directOnly = false;
+    if (hasOwnProperty.call(def, "directOnly")) {
+      directOnly = def.directOnly;
+      if (typeof directOnly !== "boolean") {
+        throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with an invalid "directOnly" property (should be a boolean)`);
+      }
+    }
+    const columnDefinitions = [
+      ...parameters.map(identifier).map((str) => `${str} HIDDEN`),
+      ...columns.map(identifier)
+    ];
+    return [
+      `CREATE TABLE x(${columnDefinitions.join(", ")});`,
+      wrapGenerator(rows, new Map(columns.map((x, i) => [x, parameters.length + i])), moduleName),
+      parameters,
+      safeIntegers,
+      directOnly
+    ];
+  }
+  function wrapGenerator(generator, columnMap, moduleName) {
+    return function* virtualTable(...args) {
+      const output = args.map((x) => Buffer.isBuffer(x) ? Buffer.from(x) : x);
+      for (let i = 0;i < columnMap.size; ++i) {
+        output.push(null);
+      }
+      for (const row of generator(...args)) {
+        if (Array.isArray(row)) {
+          extractRowArray(row, output, columnMap.size, moduleName);
+          yield output;
+        } else if (typeof row === "object" && row !== null) {
+          extractRowObject(row, output, columnMap, moduleName);
+          yield output;
+        } else {
+          throw new TypeError(`Virtual table module "${moduleName}" yielded something that isn't a valid row object`);
+        }
+      }
+    };
+  }
+  function extractRowArray(row, output, columnCount, moduleName) {
+    if (row.length !== columnCount) {
+      throw new TypeError(`Virtual table module "${moduleName}" yielded a row with an incorrect number of columns`);
+    }
+    const offset = output.length - columnCount;
+    for (let i = 0;i < columnCount; ++i) {
+      output[i + offset] = row[i];
+    }
+  }
+  function extractRowObject(row, output, columnMap, moduleName) {
+    let count = 0;
+    for (const key of Object.keys(row)) {
+      const index = columnMap.get(key);
+      if (index === undefined) {
+        throw new TypeError(`Virtual table module "${moduleName}" yielded a row with an undeclared column "${key}"`);
+      }
+      output[index] = row[key];
+      count += 1;
+    }
+    if (count !== columnMap.size) {
+      throw new TypeError(`Virtual table module "${moduleName}" yielded a row with missing columns`);
+    }
+  }
+  function inferParameters({ length }) {
+    if (!Number.isInteger(length) || length < 0) {
+      throw new TypeError("Expected function.length to be a positive integer");
+    }
+    const params = [];
+    for (let i = 0;i < length; ++i) {
+      params.push(`$${i + 1}`);
+    }
+    return params;
+  }
+  var { hasOwnProperty } = Object.prototype;
+  var { apply } = Function.prototype;
+  var GeneratorFunctionPrototype = Object.getPrototypeOf(function* () {});
+  var identifier = (str) => `"${str.replace(/"/g, '""')}"`;
+  var defer = (x) => () => x;
+  var isStringArray = (arr) => {
+    for (let i = 0;i < arr.length; ++i) {
+      if (typeof arr[i] !== "string")
+        return false;
+    }
+    return true;
+  };
+});
+
+// node_modules/better-sqlite3/lib/methods/inspect.js
+var require_inspect = __commonJS((exports, module) => {
+  var DatabaseInspection = function Database() {};
+  module.exports = function inspect(depth, opts) {
+    return Object.assign(new DatabaseInspection, this);
+  };
+});
+
+// node_modules/better-sqlite3/lib/database.js
+var require_database = __commonJS((exports, module) => {
+  var fs = __require("fs");
+  var path = __require("path");
+  var util = require_util();
+  var SqliteError = require_sqlite_error();
+  module.exports = function createDatabase(getAddon, allowNativeBinding) {
+    function Database(filenameGiven, options) {
+      if (new.target == null) {
+        return new Database(filenameGiven, options);
+      }
+      let buffer;
+      if (Buffer.isBuffer(filenameGiven)) {
+        buffer = filenameGiven;
+        filenameGiven = ":memory:";
+      }
+      if (filenameGiven == null)
+        filenameGiven = "";
+      if (options == null)
+        options = {};
+      if (typeof filenameGiven !== "string")
+        throw new TypeError("Expected first argument to be a string");
+      if (typeof options !== "object")
+        throw new TypeError("Expected second argument to be an options object");
+      if ("readOnly" in options)
+        throw new TypeError('Misspelled option "readOnly" should be "readonly"');
+      if ("memory" in options)
+        throw new TypeError('Option "memory" was removed in v7.0.0 (use ":memory:" filename instead)');
+      const filename = filenameGiven.trim();
+      const anonymous = filename === "" || filename === ":memory:";
+      const readonly = util.getBooleanOption(options, "readonly");
+      const fileMustExist = util.getBooleanOption(options, "fileMustExist");
+      const timeout = "timeout" in options ? options.timeout : 5000;
+      const verbose = "verbose" in options ? options.verbose : null;
+      const nativeBinding = "nativeBinding" in options ? options.nativeBinding : null;
+      if (readonly && anonymous && !buffer)
+        throw new TypeError("In-memory/temporary databases cannot be readonly");
+      if (!Number.isInteger(timeout) || timeout < 0)
+        throw new TypeError('Expected the "timeout" option to be a positive integer');
+      if (timeout > 2147483647)
+        throw new RangeError('Option "timeout" cannot be greater than 2147483647');
+      if (verbose != null && typeof verbose !== "function")
+        throw new TypeError('Expected the "verbose" option to be a function');
+      if (!allowNativeBinding && "nativeBinding" in options)
+        throw new TypeError('The "nativeBinding" option is only supported by the default better-sqlite3 entrypoint');
+      if (allowNativeBinding && nativeBinding != null && typeof nativeBinding !== "string" && typeof nativeBinding !== "object")
+        throw new TypeError('Expected the "nativeBinding" option to be a string or addon object');
+      const addon = getAddon(nativeBinding);
+      if (!addon.isInitialized) {
+        addon.initialize(SqliteError, arrayFactory, arrayAppender, rowFactory, recordFactory);
+        addon.isInitialized = true;
+      }
+      if (!anonymous && !filename.startsWith("file:") && !fs.existsSync(path.dirname(filename))) {
+        throw new TypeError("Cannot open database because the directory does not exist");
+      }
+      Object.defineProperties(this, {
+        [util.cppdb]: { value: new addon.Database(filename, filenameGiven, anonymous, readonly, fileMustExist, timeout, verbose || null, buffer || null) },
+        ...wrappers.getters
+      });
+    }
+    const wrappers = require_wrappers();
+    Database.prototype.prepare = wrappers.prepare;
+    Database.prototype.transaction = require_transaction();
+    Database.prototype.pragma = require_pragma();
+    Database.prototype.explain = require_explain();
+    Database.prototype.backup = require_backup();
+    Database.prototype.serialize = require_serialize();
+    Database.prototype.function = require_function();
+    Database.prototype.aggregate = require_aggregate();
+    Database.prototype.table = require_table();
+    Database.prototype.loadExtension = wrappers.loadExtension;
+    Database.prototype.exec = wrappers.exec;
+    Database.prototype.close = wrappers.close;
+    Database.prototype.defaultSafeIntegers = wrappers.defaultSafeIntegers;
+    Database.prototype.unsafeMode = wrappers.unsafeMode;
+    Database.prototype[util.inspect] = require_inspect();
+    return Database;
+  };
+  function arrayFactory(...values) {
+    return values;
+  }
+  function arrayAppender(array, ...values) {
+    const offset = array.length;
+    for (let i = 0;i < values.length; ++i) {
+      array[offset + i] = values[i];
+    }
+  }
+  function rowFactory(...keys) {
+    if (!keys.includes("__proto__")) {
+      const parameters = keys.map((_, index) => `v${index}`).join(",");
+      const properties = keys.map((key, index) => `${JSON.stringify(key)}:v${index}`).join(",");
+      return Function(`return (${parameters}) => ({${properties}})`)();
+    }
+    return (...values) => {
+      const row = {};
+      for (let i = 0;i < keys.length; ++i)
+        row[keys[i]] = values[i];
+      return row;
+    };
+  }
+  function recordFactory(value) {
+    return { value, done: false };
+  }
+});
+
+// node_modules/better-sqlite3/lib/binding.js
+var require_binding = __commonJS((exports) => {
+  var __dirname = "/Users/jwalinshah/.treehouse/trajectory-10e194/2/trajectory/node_modules/better-sqlite3/lib";
+  var fs = __require("fs");
+  var path = __require("path");
+  var PREBUILD_PLATFORMS = ["linux", "darwin", "win32"];
+  var PREBUILD_ARCHS = ["x64", "arm64"];
+  var DEFAULT_ADDON;
+  function getBinding(nativeBinding) {
+    if (typeof nativeBinding === "string") {
+      const requireFunc = typeof __non_webpack_require__ === "function" ? __non_webpack_require__ : __require;
+      return requireFunc(path.resolve(nativeBinding).replace(/(\.node)?$/, ".node"));
+    }
+    if (typeof nativeBinding === "object" && nativeBinding !== null) {
+      return nativeBinding;
+    }
+    if (DEFAULT_ADDON) {
+      return DEFAULT_ADDON;
+    }
+    let filename = getPrebuildPath();
+    if (filename) {
+      return DEFAULT_ADDON = __require(filename);
+    }
+    filename = path.join(__dirname, "..", "build", "Debug", "better_sqlite3.node");
+    if (!fs.existsSync(filename)) {
+      filename = path.join(__dirname, "..", "build", "Release", "better_sqlite3.node");
+    }
+    return DEFAULT_ADDON = __require(filename);
+  }
+  function getPrebuildPath() {
+    if (PREBUILD_PLATFORMS.includes(process.platform) && PREBUILD_ARCHS.includes(process.arch)) {
+      const target = `${isLinuxMusl() ? "linuxmusl" : process.platform}-${process.arch}`;
+      const filename = path.join(__dirname, "..", "prebuilds", `${target}.node`);
+      if (fs.existsSync(filename)) {
+        return filename;
+      }
+    }
+    return null;
+  }
+  function isLinuxMusl() {
+    return process.platform === "linux" && !process.report.getReport().header.glibcVersionRuntime;
+  }
+  exports.getBinding = getBinding;
+  exports.getPrebuildPath = getPrebuildPath;
+  if (false) {}
+});
+
+// node_modules/better-sqlite3/lib/index.js
+var require_lib = __commonJS((exports, module) => {
+  module.exports = require_database()(require_binding().getBinding, true);
+  module.exports.SqliteError = require_sqlite_error();
+});
+
 // src/python-cli.ts
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -286,6 +1015,14 @@ function toolResultEvent(content, callId, inputLine, timestamp) {
     ...timestamp ? { timestamp } : {}
   };
 }
+
+// src/adapters/claude-code-ca/index.ts
+var claudeCodeCaAdapter = {
+  source: "claude-code-ca",
+  decode(transcript) {
+    return claudeCodeAdapter.decode(transcript);
+  }
+};
 
 // src/adapters/codex/index.ts
 var INJECTED_PREFIXES = [
@@ -1130,6 +1867,145 @@ var piAdapter = {
   }
 };
 
+// src/adapters/cursor/index.ts
+var import_better_sqlite3 = __toESM(require_lib(), 1);
+var cursorAdapter = {
+  source: "cursor",
+  decode(input) {
+    const diagnostics = [];
+    const events = [];
+    const contextSource = { source: "cursor" };
+    try {
+      const db = new import_better_sqlite3.default(input, { readonly: true });
+      try {
+        let messages = [];
+        const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+        const tableNames = tables.map((t) => t.name);
+        const messageTable = tableNames.find((t) => t.toLowerCase().includes("message") || t.toLowerCase().includes("chat") || t.toLowerCase().includes("conversation"));
+        if (messageTable) {
+          const schema = db.prepare(`PRAGMA table_info(${messageTable})`).all();
+          const columnNames = schema.map((c) => c.name);
+          const roleCol = columnNames.find((c) => c.toLowerCase() === "role");
+          const contentCol = columnNames.find((c) => c.toLowerCase() === "content" || c.toLowerCase() === "text" || c.toLowerCase() === "message");
+          const timestampCol = columnNames.find((c) => c.toLowerCase() === "timestamp" || c.toLowerCase() === "created_at" || c.toLowerCase() === "date");
+          if (contentCol && roleCol) {
+            const cols = [roleCol, contentCol];
+            if (timestampCol)
+              cols.push(timestampCol);
+            if (columnNames.includes("id"))
+              cols.unshift("id");
+            const query = `SELECT ${cols.join(", ")} FROM ${messageTable} ORDER BY rowid`;
+            messages = db.prepare(query).all();
+          }
+        }
+        for (const msg of messages) {
+          const role = msg.role;
+          const content = msg.content || msg.text || msg.message;
+          const ts = parseTimestamp(msg.timestamp || msg.created_at || undefined);
+          if (role && content && (role === "user" || role === "assistant")) {
+            const event = {
+              type: "message",
+              role,
+              content,
+              ...ts ? { timestamp: ts } : {},
+              ...msg.id ? { sourceRecordId: String(msg.id) } : {}
+            };
+            events.push(event);
+          }
+        }
+        if (events.length === 0) {
+          diagnostics.push({
+            code: "timestamps_synthesized",
+            message: "No messages found in cursor SQLite database"
+          });
+        }
+      } finally {
+        db.close();
+      }
+    } catch (e) {
+      diagnostics.push({
+        code: "timestamps_synthesized",
+        message: `Failed to decode cursor SQLite: ${e instanceof Error ? e.message : String(e)}`
+      });
+    }
+    return {
+      events,
+      context: contextSource,
+      diagnostics
+    };
+  }
+};
+
+// src/adapters/agy/index.ts
+var import_better_sqlite32 = __toESM(require_lib(), 1);
+var agyAdapter = {
+  source: "agy",
+  decode(input) {
+    const diagnostics = [];
+    const events = [];
+    const contextSource = { source: "agy" };
+    try {
+      const db = new import_better_sqlite32.default(input, { readonly: true });
+      try {
+        let messages = [];
+        const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+        const tableNames = tables.map((t) => t.name);
+        const messageTable = tableNames.find((t) => t.toLowerCase() === "messages" || t.toLowerCase() === "history" || t.toLowerCase() === "conversation" || t.toLowerCase().includes("message"));
+        if (messageTable) {
+          const schema = db.prepare(`PRAGMA table_info(${messageTable})`).all();
+          const columnNames = schema.map((c) => c.name);
+          const roleCol = columnNames.find((c) => c.toLowerCase() === "role" || c.toLowerCase() === "author");
+          const contentCol = columnNames.find((c) => c.toLowerCase() === "content" || c.toLowerCase() === "text" || c.toLowerCase() === "message" || c.toLowerCase() === "body");
+          const timestampCol = columnNames.find((c) => c.toLowerCase() === "timestamp" || c.toLowerCase() === "created_at" || c.toLowerCase() === "date" || c.toLowerCase() === "time");
+          if (contentCol && roleCol) {
+            const cols = [roleCol, contentCol];
+            if (timestampCol)
+              cols.push(timestampCol);
+            if (columnNames.includes("id"))
+              cols.unshift("id");
+            const query = `SELECT ${cols.join(", ")} FROM ${messageTable} ORDER BY rowid`;
+            messages = db.prepare(query).all();
+          }
+        }
+        for (const msg of messages) {
+          const role = msg.role;
+          const content = msg.content || msg.text || msg.message || msg.body;
+          const ts = parseTimestamp(msg.timestamp || msg.created_at || undefined);
+          if (role && content && (role === "user" || role === "assistant" || role === "model" || role === "human")) {
+            const normalizedRole = role === "model" || role === "assistant" ? "assistant" : "user";
+            const event = {
+              type: "message",
+              role: normalizedRole,
+              content,
+              ...ts ? { timestamp: ts } : {},
+              ...msg.id ? { sourceRecordId: String(msg.id) } : {}
+            };
+            events.push(event);
+          }
+        }
+        if (events.length === 0) {
+          diagnostics.push({
+            code: "timestamps_synthesized",
+            message: "No messages found in agy SQLite database"
+          });
+        }
+      } finally {
+        db.close();
+      }
+    } catch (e) {
+      diagnostics.push({
+        code: "timestamps_synthesized",
+        message: `Failed to decode agy SQLite: ${e instanceof Error ? e.message : String(e)}`
+      });
+    }
+    return {
+      events,
+      context: contextSource,
+      diagnostics
+    };
+  }
+};
+
 // src/bounds.ts
 var DEFAULT_NORMALIZATION_BOUNDS = Object.freeze({
   toolArguments: Object.freeze({ maxCharacters: 20000 }),
@@ -1455,6 +2331,7 @@ function normalizeDecodedSession(decoded, bounds, options) {
 function normalizeDecodedSessionInternal(decoded, bounds, options) {
   const partial = options?.partial ?? false;
   const filters = options?.filters ?? DEFAULT_NORMALIZATION_FILTERS;
+  const source = options?.source;
   const diagnostics = [...decoded.diagnostics];
   const body = [];
   const bodyBases = [];
@@ -1468,7 +2345,7 @@ function normalizeDecodedSessionInternal(decoded, bounds, options) {
     if (event.model) {
       modelCounts.set(event.model, (modelCounts.get(event.model) ?? 0) + 1);
     }
-    const record = normalizeEvent(event, eventIndex, body.length + 1, plan, diagnostics, bounds, filters, partial);
+    const record = normalizeEvent(event, eventIndex, body.length + 1, plan, diagnostics, bounds, filters, partial, source);
     if (!record)
       continue;
     const hasTimestamp = event.timestamp !== undefined && !Number.isNaN(event.timestamp.getTime());
@@ -1522,12 +2399,13 @@ function normalizeDecodedSessionInternal(decoded, bounds, options) {
     filters
   };
 }
-function normalizeEvent(event, eventIndex, recordIndex, plan, diagnostics, bounds, filters, partial) {
+function normalizeEvent(event, eventIndex, recordIndex, plan, diagnostics, bounds, filters, partial, source) {
   if (event.type === "message") {
     if (!event.content.trim()) {
       return;
     }
-    if (event.role === "user" && NOISE_PREFIXES.some((prefix) => event.content.trimStart().startsWith(prefix))) {
+    const shouldFilterNoise = source !== "claude-code-ca" && source !== "pi";
+    if (shouldFilterNoise && event.role === "user" && NOISE_PREFIXES.some((prefix) => event.content.trimStart().startsWith(prefix))) {
       diagnostics.push({
         code: "noise_record_dropped",
         message: "Dropped a harness-noise user record.",
@@ -2268,9 +3146,9 @@ async function openSqliteReadOnly(path) {
   }
   try {
     const sqlite = await dynamicImport("bun:sqlite");
-    const Database = sqlite.Database;
+    const Database3 = sqlite.Database;
     return openWithWalFallback((readOnly) => {
-      const database = readOnly ? new Database(path, { readonly: true }) : new Database(path);
+      const database = readOnly ? new Database3(path, { readonly: true }) : new Database3(path);
       return {
         all: (sql, ...params) => database.query(sql).all(...params),
         close: () => database.close()
@@ -2544,13 +3422,16 @@ var DEFAULT_LIMIT = 50;
 var MAX_LIMIT = 1000;
 var LISTERS = {
   "claude-code": listClaudeCodeTrajectories,
+  "claude-code-ca": listClaudeCodeTrajectories,
   codex: listCodexTrajectories,
   deepagents: listDeepAgentsTrajectories,
   hermes: listHermesTrajectories,
   "letta-code": listLettaCodeTrajectories,
   openclaw: listOpenClawTrajectories,
   openhands: listOpenHandsTrajectories,
-  pi: listPiTrajectories
+  pi: listPiTrajectories,
+  cursor: async () => [],
+  agy: async () => []
 };
 async function listTrajectories(input) {
   if (!input || typeof input !== "object") {
@@ -2615,12 +3496,15 @@ function invalidCursor() {
 // src/index.ts
 var ADAPTERS = {
   "claude-code": claudeCodeAdapter,
+  "claude-code-ca": claudeCodeCaAdapter,
   codex: codexAdapter,
   hermes: hermesAdapter,
   "letta-code": lettaCodeAdapter,
   openclaw: openClawAdapter,
   openhands: openHandsAdapter,
-  pi: piAdapter
+  pi: piAdapter,
+  cursor: cursorAdapter,
+  agy: agyAdapter
 };
 function decodeTranscript(input) {
   if (!input || typeof input !== "object") {
@@ -2643,7 +3527,8 @@ function normalizeTranscript(input) {
   const { decoded, bounds, filters } = decodeTranscript(input);
   return normalizeDecodedSession(decoded, bounds, {
     partial: isPartialTranscript(input),
-    filters
+    filters,
+    source: input.source
   });
 }
 function isPartialTranscript(input) {
