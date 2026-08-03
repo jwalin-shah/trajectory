@@ -1,0 +1,38 @@
+{
+  "title": "Trajectory 007: Normalize and reconcile all July 27 agent work",
+  "description": "Inventory every local agent session modified on 2026-07-27 across CT, CA, direct Claude Code, Codex, Cursor, Pi, Agy, and the remaining supported stores; repair Trajectory's Agy discovery and normalization against the installed Antigravity 1.1.7 store; and produce a provenance-backed HomeBase/Bridge/Orbit decision reconciliation. Source transcripts are evidence; this ticket and its reconciliation report do not become policy authority.",
+  "allowed_paths": [
+    "tickets/007-agy-daily-transcript-reconciliation.json",
+    "src/adapters/agy/",
+    "src/listing.ts",
+    "test/",
+    "fixtures/agy/",
+    "scripts/normalize-local-day.mjs",
+    "evidence/"
+  ],
+  "proof_method": "runtime_schema_trace_plus_golden_fixture_and_live_normalization",
+  "capability_inventory": {
+    "official_upstream": [
+      "google-antigravity/antigravity-cli CHANGELOG: version 1.0.4 declares SQLite .db conversations as the CLI conversation format",
+      "Installed agy 1.1.7 exposes --conversation and --continue but no transcript export or local-store schema command"
+    ],
+    "githits_prior_art": "GitHits 0.6.4 searches of google-antigravity/antigravity-cli for transcript, SQLite conversation steps, trajectory_meta, and step_payload returned no indexed implementation contract",
+    "installed_runtime": [
+      "~/.gemini/antigravity-cli/conversations/<conversation-id>.db contains trajectory/step blobs rather than a conventional role/content message table",
+      "~/.gemini/antigravity-cli/brain/<conversation-id>/.system_generated/logs/transcript.jsonl is the readable generated transcript for that conversation"
+    ],
+    "cursor_inventory": [
+      "Cursor 3.13.21 exposes agent resume/list and stream-json output, but no local transcript export command",
+      "Official Cursor documentation says chat history is local and chats can be exported; the installed agent store is ~/.cursor/chats/<workspace-hash>/<chat-id>/store.db",
+      "GitHits prior art maps the installed store to a blobs table, but no Cursor session was modified on 2026-07-27, so the existing Cursor adapter and TODO lister are not changed by this ticket"
+    ],
+    "adoption_decision": "List conversation .db files as source identities, resolve their matching generated transcript.jsonl, and normalize the log's typed steps. Do not decode undocumented SQLite protobuf blobs."
+  },
+  "acceptance": [
+    "listTrajectories(source=agy) discovers local .db conversations newest first and returns the readable transcript path when present",
+    "Sanitized Agy golden fixtures normalize user, assistant, reasoning, tool-call, and tool-result records with stable identities",
+    "Every supported local source is probed for 2026-07-27; every readable active transcript is normalized or has an explicit failure record",
+    "The reconciliation report cites source, session ID, canonical record identity, and distinguishes captain decisions from agent claims and observed implementation",
+    "Typecheck, unit tests, build, and live normalization proof commands pass"
+  ]
+}

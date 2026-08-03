@@ -18,6 +18,7 @@ import { listLettaCodeTrajectories } from "./adapters/letta-code/list.js";
 import { listOpenClawTrajectories } from "./adapters/openclaw/list.js";
 import { listOpenHandsTrajectories } from "./adapters/openhands/list.js";
 import { listPiTrajectories } from "./adapters/pi/list.js";
+import { listAgyTrajectories } from "./adapters/agy/list.js";
 import type { AnyTrajectorySource } from "./types.js";
 import { NormalizationError } from "./types.js";
 
@@ -69,7 +70,7 @@ const LISTERS: Record<AnyTrajectorySource, SourceLister> = {
   openhands: listOpenHandsTrajectories,
   pi: listPiTrajectories,
   cursor: async () => [], // TODO: list cursor sessions from ~/.cursor/chats
-  agy: async () => [], // TODO: list agy sessions (API-based, no local store yet)
+  agy: listAgyTrajectories,
 };
 
 /**

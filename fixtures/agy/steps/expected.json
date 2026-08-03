@@ -1,0 +1,42 @@
+{
+  "records": [
+    {
+      "role": "meta",
+      "source": "agy"
+    },
+    {
+      "role": "user",
+      "content": "Inspect the project.",
+      "timestamp": "2026-07-27T12:00:00.000Z"
+    },
+    {
+      "role": "reasoning",
+      "content": "I will inspect it.",
+      "timestamp": "2026-07-27T12:00:01.000Z"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "agy-1-call-1",
+          "name": "run_command",
+          "args": "{\"command\":\"pwd\"}"
+        }
+      ],
+      "timestamp": "2026-07-27T12:00:01.000Z"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "agy-1-call-1",
+      "content": "/workspace",
+      "timestamp": "2026-07-27T12:00:02.000Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Inspection complete.",
+      "timestamp": "2026-07-27T12:00:03.000Z"
+    }
+  ],
+  "diagnostics": []
+}

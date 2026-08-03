@@ -109,6 +109,20 @@ beforeAll(() => {
       "('h-new', NULL, 1783100000.0, 1783100500.0)",
   );
   hermes.close();
+
+  // agy: one SQLite file per conversation; WAL sidecars are not sessions.
+  const agy = join(base, "agy");
+  mkdirSync(agy, { recursive: true });
+  for (const [name, at] of [
+    ["agy-old.db", "2026-07-01T08:00:00Z"],
+    ["agy-new.db", "2026-07-02T08:00:00Z"],
+  ] as const) {
+    const file = join(agy, name);
+    writeFileSync(file, "sqlite-placeholder");
+    const time = new Date(at);
+    utimesSync(file, time, time);
+  }
+  writeFileSync(join(agy, "agy-new.db-wal"), "wal-placeholder");
 });
 
 afterAll(() => {
@@ -213,6 +227,13 @@ describe("listTrajectories", () => {
       new Date(1783100500.0 * 1_000).toISOString(),
     );
     expect(result.items[0]?.path.endsWith("state.db")).toBe(true);
+  });
+
+  test("lists agy SQLite conversations and ignores WAL sidecars", async () => {
+    const result = await listTrajectories({ source: "agy", root: join(base, "agy") });
+    expect(result.items.map((item) => item.id)).toEqual(["agy-new", "agy-old"]);
+    expect(result.items[0]?.path.endsWith("agy-new.db")).toBe(true);
+    expect(result.items[0]?.updatedAt).toBe("2026-07-02T08:00:00.000Z");
   });
 
   test("lists deepagents threads from the fixture store", async () => {

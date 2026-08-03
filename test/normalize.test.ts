@@ -26,6 +26,7 @@ const fixtures = [
   { source: "openhands", name: "openhands/cleanup" },
   { source: "pi", name: "pi/tool-calls" },
   { source: "pi", name: "pi/cleanup" },
+  { source: "agy", name: "agy/steps" },
 ] as const satisfies ReadonlyArray<{ source: TrajectorySource; name: string }>;
 
 const toolFixtures = fixtures.filter(
